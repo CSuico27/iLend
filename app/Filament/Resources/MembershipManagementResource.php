@@ -22,15 +22,33 @@ use Filament\Tables\Table;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\Fieldset;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class MembershipManagementResource extends Resource
 {
     protected static ?string $model = User::class;
-    protected static ?string $pluralModelLabel = 'Members'; 
+    protected static ?string $pluralModelLabel = 'Membership Requests'; 
     protected static ?string $navigationLabel = 'Membership Management';
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-user';
     protected static ?int $navigationSort = 1;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::whereHas('info', function ($query) {
+            $query->where('status', 'pending');
+        })->count();
+    }
+    public static function getNavigationBadgeColor(): string | array | null
+    {
+        return 'warning';
+    }
+    protected static ?string $navigationBadgeTooltip = 'Pending Members';
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        return $data;
+    }
+    
     public static function form(Form $form): Form
     {
         return $form
@@ -57,12 +75,19 @@ class MembershipManagementResource extends Resource
                                                 Tab::make('Details')
                                                     ->icon('heroicon-o-user')
                                                     ->schema([
-                                                        TextInput::make('name')
-                                                            ->label('Full Name')
+                                                        TextInput::make('member_id')
+                                                            ->label('Member ID')
+                                                            ->default(function () {
+                                                                $nextId = User::max('id') + 1;
+                                                                return str_pad($nextId, 5, '0', STR_PAD_LEFT);
+                                                            })
+                                                            ->disabled()
+                                                            ->dehydrated()
                                                             ->required(),
-
                                                         Grid::make(2)
                                                             ->schema([
+                                                                
+
                                                                 TextInput::make('phone')
                                                                     ->label('Phone')
                                                                     ->tel()
@@ -92,7 +117,7 @@ class MembershipManagementResource extends Resource
                                                             ->required(),
                                                     ]),
 
-                                                Tab::make('Valid IDs')
+                                                Tab::make('Requirements')
                                                     ->icon('heroicon-o-identification')
                                                     ->schema([
                                                         FileUpload::make('picture')
@@ -101,24 +126,27 @@ class MembershipManagementResource extends Resource
                                                             ->directory('user-picture')
                                                             ->preserveFilenames()
                                                             ->disk('public')
+                                                            ->imageCropAspectRatio('1:1')
+                                                            ->openable()
                                                             ->required(),
-
                                                         FileUpload::make('brgy_clearance')
                                                             ->label('Barangay Clearance')
                                                             ->image()
                                                             ->directory('brgy-clearance')
                                                             ->preserveFilenames()
                                                             ->disk('public')
+                                                            ->imageCropAspectRatio('4:3')
+                                                            ->openable()
                                                             ->required(),
-
                                                         FileUpload::make('valid_id')
                                                             ->label('Valid ID')
                                                             ->image()
                                                             ->directory('valid-ids')
                                                             ->preserveFilenames()
                                                             ->disk('public')
+                                                            ->imageCropAspectRatio('4:3')
+                                                            ->openable()
                                                             ->required(),
-
                                                         Select::make('status')
                                                             ->label('Status')
                                                             ->options([
@@ -141,14 +169,23 @@ class MembershipManagementResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query
+                    ->where('role', 'user')                              
+                    ->whereHas('info', fn ($q) => $q->where('status', 'Pending')); 
+            })
             ->columns([
-                TextColumn::make('name')->label('Name'),
+                TextColumn::make('info.member_id')
+                    ->label('Member ID')
+                    ->searchable(),
+                TextColumn::make('name')
+                    ->label('Name')
+                    ->searchable(),
                 TextColumn::make('email')->label('Email'),
-                TextColumn::make('info.phone')->label('Phone'),
-                TextColumn::make('info.gender')->label('Gender'),
                 TextColumn::make('info.status')
                     ->label('Status')
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                    ->badge()
                     ->color(fn (string $state): string => match($state) {
                         'Pending' => 'warning',
                         'Approved' => 'success',
@@ -159,7 +196,10 @@ class MembershipManagementResource extends Resource
                     ->label('Date Applied') 
                     ->date('F j, Y'),
             ])
-            ->filters([])
+            ->recordAction(null)
+            ->filters([
+                
+            ])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\Action::make('approve')
@@ -190,7 +230,6 @@ class MembershipManagementResource extends Resource
                                 ->danger()
                                 ->send();
                         }),
-                    Tables\Actions\EditAction::make()->modalWidth('2xl'),
                     Tables\Actions\ViewAction::make()->modalWidth('2xl'),
                     Tables\Actions\DeleteAction::make(),
                 ])
