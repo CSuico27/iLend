@@ -30,6 +30,9 @@ class MemberListResource extends Resource
     protected static ?string $pluralModelLabel = 'Approved Members';
     protected static ?string $navigationLabel = 'Member List';
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
+
+    // protected static ?string $navigationGroup = 'Member';
+
     protected static ?int $navigationSort = 2;
 
     public static function getEloquentQuery(): Builder

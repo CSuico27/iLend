@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\SeminarSchedule;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,21 +10,20 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class SeminarCreatedNotification extends Mailable
+class MemberStatusNotification extends Mailable
 {
     use Queueable, SerializesModels;
-    public $seminar;
-    public $emailBody;
-    public $userName;
-
+    public User $user;
+    public string $status;
+    public ?string $reason;
     /**
      * Create a new message instance.
      */
-    public function __construct(SeminarSchedule $seminar, string $emailBody, string $userName)
+    public function __construct(User $user, string $status, ?string $reason = null)
     {
-        $this->seminar = $seminar;
-        $this->emailBody = $emailBody;
-        $this->userName = $userName;
+        $this->user = $user;
+        $this->status = $status; 
+        $this->reason = $reason;
     }
 
     /**
@@ -33,7 +32,7 @@ class SeminarCreatedNotification extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New seminar has been created for you!'
+            subject: 'Membership ' . ucfirst($this->status)
         );
     }
 
@@ -43,11 +42,11 @@ class SeminarCreatedNotification extends Mailable
     public function content(): Content
     {
         return new Content(
-           markdown: 'email.Created-Seminar',
+            markdown: 'email.Member-Status',
             with: [
-                'seminar' => $this->seminar,
-                'emailBody' => $this->emailBody,
-                'userName' => $this->userName,
+                'user' => $this->user,
+                'status' => $this->status,
+                'reason' => $this->reason,
             ],
         );
     }

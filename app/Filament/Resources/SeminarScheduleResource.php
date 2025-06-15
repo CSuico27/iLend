@@ -105,7 +105,15 @@ class SeminarScheduleResource extends Resource
                 TextColumn::make('title')
                     ->label('Title')
                     ->searchable(),
-
+                TextColumn::make('seminar_date')
+                    ->label('Date')
+                    ->date('F d, Y'),
+                TextColumn::make('start_time')
+                    ->label('Start Time')
+                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('h:i A')),
+                TextColumn::make('end_time')
+                    ->label('End Time')
+                    ->formatStateUsing(fn ($state) => \Carbon\Carbon::parse($state)->format('h:i A')),
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
@@ -116,6 +124,7 @@ class SeminarScheduleResource extends Resource
                     })
                     ->searchable(),
             ])
+            ->defaultSort('created_at', 'desc')
             ->recordAction(null)
             ->filters([])
 
@@ -129,13 +138,14 @@ class SeminarScheduleResource extends Resource
                         Infolist::make()
                             ->record($record) 
                             ->schema([
-                            Section::make('Seminar Participants')
+                            Section::make()
                                 ->schema([
-                                    TextEntry::make('assigned_users_names')
-                                        ->label('Participants')
-                                        ->formatStateUsing(fn($state) => collect($state ?? [])->map(fn($name) => '• ' . $name)->implode("\n"))
-                                        ->helperText(fn($state) => count($state ?? []) . ' participant(s)')
-                                        ->markdown()
+                                    \Filament\Infolists\Components\Grid::make(1) // column layout
+                                        ->schema(function (SeminarSchedule $record) {
+                                            return collect($record->assigned_users_names ?? [])
+                                                ->map(fn($name) => TextEntry::make($name)->default($name)->label(''))
+                                                ->all();
+                                        }),
                                 ]),
                         ])
                     

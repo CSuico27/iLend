@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\MembershipManagementResource\Pages;
+use App\Mail\MemberStatusNotification;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -22,8 +23,11 @@ use Filament\Tables\Table;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 
 class MembershipManagementResource extends Resource
 {
@@ -58,7 +62,7 @@ class MembershipManagementResource extends Resource
                         Tab::make('Account Info')
                             ->schema([
                                 TextInput::make('name')->label('Full Name')->required(),
-                                TextInput::make('email')->email()->required(),
+                                TextInput::make('email')->email()->required()->unique(),
                                 TextInput::make('password')
                                     ->password()
                                     ->revealable()
@@ -207,11 +211,15 @@ class MembershipManagementResource extends Resource
                         ->icon('heroicon-o-check')
                         ->color('success')
                         ->requiresConfirmation()
+                        ->modalIcon('heroicon-o-check')
+                        ->modalDescription('Are you sure you want to approve this member?')
                         ->visible(fn (User $record) => $record->info?->status === 'Pending')
                         ->action(function (User $record) {
-                            $record->info?->update(['status' => 'Approved']);
-
-                            \Filament\Notifications\Notification::make()
+                            $record->info->update(['status' => 'Approved']);
+                            Mail::to($record->email)->send(
+                                new MemberStatusNotification($record, 'Approved')
+                            );
+                            Notification::make()
                                 ->title('Member approved')
                                 ->success()
                                 ->send();
@@ -219,16 +227,32 @@ class MembershipManagementResource extends Resource
 
                     Tables\Actions\Action::make('reject')
                         ->label('Reject')
-                        ->icon('heroicon-o-x-circle')
+                        ->icon('heroicon-o-x-mark')
                         ->color('danger')
+                        ->form([
+                            Textarea::make('reason')
+                                ->label('Please provide reason for rejection:')
+                                ->required(),
+                        ])
                         ->requiresConfirmation()
+                        ->modalIcon('heroicon-o-x-mark')
+                        ->modalDescription('Are you sure you want to reject this member?')
                         ->visible(fn (User $record) => $record->info?->status === 'Pending')
-                        ->action(function (User $record) {
-                            $record->info?->update(['status' => 'Rejected']);
-                            \Filament\Notifications\Notification::make()
-                                ->title('Member rejected')
-                                ->danger()
-                                ->send();
+                        ->action(function (array $data, User $record) {
+                        $reason = $data['reason'];
+
+                        $record->info?->update(['status' => 'Rejected']);
+
+                        Mail::to($record->email)->send(
+                            new MemberStatusNotification($record, 'Rejected', $reason)
+                        );
+
+                        $record->delete();
+
+                        Notification::make()
+                            ->title('Member rejected and deleted')
+                            ->danger()
+                            ->send();
                         }),
                     Tables\Actions\ViewAction::make()->modalWidth('2xl'),
                     Tables\Actions\DeleteAction::make(),
