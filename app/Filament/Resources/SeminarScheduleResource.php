@@ -140,7 +140,7 @@ class SeminarScheduleResource extends Resource
                             ->schema([
                             Section::make()
                                 ->schema([
-                                    \Filament\Infolists\Components\Grid::make(1) // column layout
+                                    \Filament\Infolists\Components\Grid::make(1)
                                         ->schema(function (SeminarSchedule $record) {
                                             return collect($record->assigned_users_names ?? [])
                                                 ->map(fn($name) => TextEntry::make($name)->default($name)->label(''))
