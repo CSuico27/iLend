@@ -14,6 +14,7 @@ class UserProfile extends Model
         'birthdate',
         'gender',
         'address',
+        'avatar',
         'picture',
         'brgy_clearance',
         'valid_id',
