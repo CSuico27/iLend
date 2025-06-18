@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('picture')->nullable();
             $table->string('brgy_clearance')->nullable();
             $table->string('valid_id')->nullable();
+            $table->boolean('is_applied_for_membership')->default(0);
             $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending');
             $table->timestamps();
         });
