@@ -17,8 +17,10 @@ class UsersSeeder extends Seeder
     {
         DB::table('users')->insert([
             'name' => 'iLend Admin',
+            'role' => 'admin',
             'email' => 'ilendnjm@gmail.com',
             'email_verified_at' => now(),
+            'is_verified' => 1,
             'password' => Hash::make('ilend@2025'),
             'remember_token' => Str::random(10),
             'created_at' => now(),
