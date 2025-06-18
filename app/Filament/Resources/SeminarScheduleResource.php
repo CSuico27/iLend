@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\Mail;
 class SeminarScheduleResource extends Resource
 {
     protected static ?string $model = SeminarSchedule::class;
+    protected static ?string $modelLabel = 'Seminar Schedule';
     protected static ?string $pluralModelLabel = 'Seminars';
     protected static ?string $navigationLabel = 'Seminar Schedule';
     protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';

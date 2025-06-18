@@ -62,7 +62,7 @@ class MembershipManagementResource extends Resource
                         Tab::make('Account Info')
                             ->schema([
                                 TextInput::make('name')->label('Full Name')->required(),
-                                TextInput::make('email')->email()->required(),
+                                TextInput::make('email')->email()->required()->unique(),
                                 TextInput::make('password')
                                     ->password()
                                     ->revealable()
