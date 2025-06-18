@@ -7,8 +7,11 @@
         <title>{{ $title ?? 'Page Title' }}</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
+        <wireui:scripts />
+        {{-- <script src="//unpkg.com/alpinejs" defer></script> --}}
     </head>
     <body>
+        <x-notifications />
         {{ $slot }}
         @livewireScripts
     </body>
