@@ -20,7 +20,7 @@ class MemberLedgerResource extends Resource
     protected static ?string $pluralModelLabel = 'Member Ledger'; 
     protected static ?string $navigationLabel = 'Member Ledger';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $navigationGroup = 'Loans Management';
+    // protected static ?string $navigationGroup = 'Loans Management';
     protected static ?int $navigationSort = 4;
     
     public static function canCreate(): bool
@@ -108,18 +108,7 @@ class MemberLedgerResource extends Resource
                 //
             ])
             ->actions([
-                // Tables\Actions\ViewAction::make()
-                //     ->modalWidth('4xl'),
-                    
-                // Tables\Actions\Action::make('view_schedule')
-                //     ->label('Payment Schedule')
-                //     ->icon('heroicon-o-calendar-days')
-                //     ->color('info')
-                    // ->modalContent(function ($record) {
-                    //     // You can create a custom view to show payment schedule
-                    //     return view('filament.loan-schedule', compact('record'));
-                    // })
-                    // ->modalWidth('3xl'),
+                // 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
