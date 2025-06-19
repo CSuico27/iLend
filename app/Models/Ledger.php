@@ -8,8 +8,7 @@ class Ledger extends Model
 {
     protected $fillable = [
         'loan_id',
-        'amount_paid',
-        'remaining_balance',
+        'due_date',
         'status'
     ];
     public function loan()

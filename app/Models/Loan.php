@@ -23,7 +23,7 @@ class Loan extends Model
     ];
     public function ledgers()
     {
-        return $this->hasMany(Ledger::class);
+        return $this->hasOne(Ledger::class);
     }
     public function user(): BelongsTo
     {

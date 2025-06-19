@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('ledgers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('loan_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount_paid', 10, 2)->default(0);
-            $table->decimal('remaining_balance', 10, 2)->default(0);
+            $table->date('due_date');
             $table->enum('status', ['Pending', 'Paid'])->default('Pending');
             $table->timestamps();
         });
