@@ -7,7 +7,7 @@
                 <input 
                     type="text" 
                     maxlength="1"
-                    class="block w-9.5 text-center bg-transparent border-t-transparent focus:outline-none border-b-2 border-x-transparent border-b-gray-200 sm:text-sm focus:border-t-transparent focus:border-x-transparent focus:border-b-blue-500 focus:ring-0 disabled:opacity-50 disabled:pointer-events-none dark:border-b-neutral-700 dark:text-neutral-400  dark:placeholder-neutral-500 dark:focus:ring-neutral-600 dark:focus:border-b-neutral-600" 
+                    class="block w-9.5 text-center bg-transparent border-t-transparent focus:outline-none border-b-2 border-x-transparent border-b-gray-200 sm:text-sm focus:border-t-transparent focus:border-x-transparent focus:border-b-[#ffc71c] focus:ring-0 disabled:opacity-50 disabled:pointer-events-none dark:border-b-neutral-700 dark:text-neutral-400  dark:placeholder-neutral-500 dark:focus:ring-neutral-600 dark:focus:border-b-neutral-600" 
                     placeholder="⚬" 
                     data-hs-pin-input-item=""
                     wire:model.lazy="otp.{{ $index }}"
@@ -21,8 +21,8 @@
                 </p>
             </div>
         @endif
-        <a href="#" wire:click="verifyOtp" class="py-3 px-4 inline-flex rounded-md justify-center gap-x-2 text-sm font-semibold border border-transparent bg-[#2b2b31] text-white hover:bg-slate-950 disabled:opacity-50 disabled:pointer-events-none">
-            Sign up
+        <a href="#" wire:click="verifyOtp" class="py-3 px-4 inline-flex rounded-full justify-center gap-x-2 text-sm font-semibold border border-transparent bg-[#fe0002] text-white hover:bg-[#ffc71c] disabled:opacity-50 disabled:pointer-events-none">
+            Verify
         </a>
     </div>
 </div>
