@@ -91,13 +91,9 @@ class MemberLedgerResource extends Resource
                     ->label('Loan Term')
                     ->suffix(' months'),
 
-                TextColumn::make('start_date')
-                    ->label('Start Date')
-                    ->date(),
+                TextColumn::make('ledgers.due_date')
+                    ->label('Due Date'),
 
-                TextColumn::make('end_date')
-                    ->label('End Date')
-                    ->date(),    
                 TextColumn::make('ledgers.status')
                     ->label('Payment Status')
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))

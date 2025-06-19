@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LoansManagementResource\Pages;
 use App\Filament\Resources\LoansManagementResource\RelationManagers\LedgersRelationManager;
+use App\Models\Ledger;
 use App\Models\Loan;
 use Carbon\Carbon;
+use Filament\Forms\Components\Hidden;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\DatePicker;
@@ -26,6 +28,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Relationship;
+use Illuminate\Database\Eloquent\Model;
 
 class LoansManagementResource extends Resource
 {
@@ -44,33 +47,75 @@ class LoansManagementResource extends Resource
      */
     private static function updateCalculatedLoanFields(Set $set, Get $get): void
     {
-        $loanAmount = (float) preg_replace('/[^\d.]/', '', $get('loan_amount') ?? '');
-        $interestRate = (float) ($get('interest_rate') ?? 0);
-        $loanTerm = (int) ($get('loan_term') ?? 0);
-        $paymentFrequency = $get('payment_frequency') ?? 'monthly';  
-        
-        $interestAmount = $loanAmount * ($interestRate / 100);
+            $loanAmount = (float) preg_replace('/[^\d.]/', '', $get('loan_amount') ?? '');
+            $interestRate = (float) ($get('interest_rate') ?? 0);
+            $loanTerm = (int) ($get('loan_term') ?? 0);
+            $paymentFrequency = $get('payment_frequency') ?? 'monthly';  
+            
+            $interestAmount = $loanAmount * ($interestRate / 100);
+            $set('interest_amount', number_format($interestAmount, 2));
+            
+            $totalPayment = $loanAmount + $interestAmount;
+            $set('total_payment', number_format($totalPayment, 2));
 
-        $set('interest_amount', number_format($interestAmount, 2));
-        $totalPayment = $loanAmount + $interestAmount;
+            $count = 0; 
+            
+            if ($loanTerm > 0 && $paymentFrequency) {
+                $count = match ($paymentFrequency) {
+                    'daily' => $loanTerm * 30,     
+                    'weekly' => $loanTerm * 4.33,  
+                    'biweekly' => $loanTerm * 2.17,
+                    'monthly' => $loanTerm,   
+                    default => 0, 
+                };
+            }
 
-        $set('total_payment', number_format($totalPayment, 2));
-
-        $count = 0; 
-        
-        if ($loanTerm > 0 && $paymentFrequency) {
-            $count = match ($paymentFrequency) {
-                'daily' => $loanTerm * 30,     
-                'weekly' => $loanTerm * 4.33,  
-                'biweekly' => $loanTerm * 2.17,
-                'monthly' => $loanTerm,   
-                default => 0, 
+            $paymentPerTerm = $count > 0 ? $totalPayment / $count : 0;
+            $set('payment_per_term', number_format($paymentPerTerm, 2));
+            
+            $today = Carbon::now();
+            $start = match ($paymentFrequency) {
+                'daily' => $today->copy()->addDay(),
+                'weekly' => $today->copy()->addWeek(),
+                'biweekly' => $today->copy()->addWeeks(2),
+                'monthly' => $today->copy()->addMonth(),
+                default => $today,
             };
-        }
-        $paymentPerTerm = $count > 0 ? $totalPayment / $count : 0;
-        $set('payment_per_term', number_format($paymentPerTerm, 2));
-    }
 
+            $end = match ($paymentFrequency) {
+                'daily' => $start->copy()->addDays($loanTerm * 30),
+                'weekly' => $start->copy()->addWeeks((int) round($loanTerm * 4.34)),
+                'biweekly' => $start->copy()->addWeeks(($loanTerm * 2.17) + 2),
+                'monthly' => $start->copy()->addMonths($loanTerm - 1),
+                default => $start,
+            };
+
+            $set('start_date', $start->toDateString());
+            $set('end_date', $end->toDateString());
+
+            $startDate = Carbon::parse($get('start_date'));
+            $paymentFrequency = $get('payment_frequency') ?? 'monthly';
+            $currentLedgers = $get('ledgers') ?? [];
+            $newLedgers = [];
+
+            for ($i = 0; $i < $count; $i++) {
+            $existingStatus = $currentLedgers[$i]['status'] ?? 'Pending';
+
+            $newLedgers[] = [
+                'status' => $existingStatus,
+                'due_date' => $startDate->copy()->toDateString(), 
+            ];
+
+            $startDate = match ($paymentFrequency) {
+                'daily' => $startDate->addDay(),
+                'weekly' => $startDate->addWeek(),
+                'biweekly' => $startDate->addWeeks(2),
+                'monthly' => $startDate->addMonth(),
+                default => $startDate,
+            };
+            $set('ledgers', $newLedgers);
+        }
+    }
     /**
      * @param array 
      * @return array 
@@ -94,7 +139,7 @@ class LoansManagementResource extends Resource
         }
         $data['start_date'] = $start->toDateString();
 
-        $data['end_date'] = $start->copy()->addMonths($loanTerm)->toDateString();
+        $data['end_date'] = $start->copy()->addMonths($loanTerm )->toDateString();
 
         $interestAmount = $loanAmount * ($interestRate / 100);
         
@@ -119,7 +164,6 @@ class LoansManagementResource extends Resource
         $data['interest_amount'] = (float) preg_replace('/[^\d.]/', '', $data['interest_amount'] ?? '0');
         $data['total_payment'] = (float) preg_replace('/[^\d.]/', '', $data['total_payment'] ?? '0');
         $data['payment_per_term'] = (float) preg_replace('/[^\d.]/', '', $data['payment_per_term'] ?? '0');
-        $data['remaining_balance'] = (float) preg_replace('/[^\d.]/', '', $data['total_payment'] ?? '0');
 
         return $data; 
     }
@@ -285,34 +329,29 @@ class LoansManagementResource extends Resource
                             ->default('Pending')
                             ->required(),
                         ]),
-                    Repeater::make('ledgers')
-                        ->schema([
-                            Grid::make(2)->schema([
-                                TextInput::make('amount_paid')
-                                    ->label('Amount Paid')
-                                    ->numeric()
-                                    ->disabled()
-                                    ->prefix('₱')
-                                    ->default(0),
 
-                                TextInput::make('remaining_balance')
-                                    ->label('Remaining Balance')
-                                    ->numeric()
-                                    ->disabled()
-                                    ->reactive()
-                                    ->prefix('₱')
-                            ]),
-                            Select::make('ledgers.status')
-                                ->label('Status')
+                        Repeater::make('ledgers')
+                            ->relationship('ledgers')
+                            ->reactive()
+                            ->deletable(false)
+                            ->reorderable(false)
+                            ->addable(false)
+                            ->schema([
+                            TextInput::make('due_date')
+                                ->label('Due Date')
+                                ->disabled()
+                                ->dehydrated(true),
+                            Select::make('status')
+                                ->label('Payment Status')
                                 ->options([
                                     'Pending' => 'Pending',
                                     'Paid' => 'Paid',
                                 ])
                                 ->default('Pending')
                                 ->required()
-                                ->columnSpanFull(),
-                        ]),
-                ]),
+                            ])
+                    ]),
+               
             ]);
     }
     public static function getEloquentQuery(): Builder
@@ -383,7 +422,7 @@ class LoansManagementResource extends Resource
                     // Tables\Actions\ViewAction::make()->modalWidth('2xl'),
                     Tables\Actions\DeleteAction::make(),
                 ]),
-                // Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make(),
             ])
 
             ->bulkActions([
@@ -396,7 +435,7 @@ class LoansManagementResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            LedgersRelationManager::class
         ];
     }
 
@@ -405,7 +444,7 @@ class LoansManagementResource extends Resource
         return [
             'index' => Pages\ListLoansManagement::route('/'),
             // 'create' => Pages\CreateLoansManagement::route('/create'),
-            // 'edit' => Pages\EditLoansManagement::route('/{record}/edit'),
+            'edit' => Pages\EditLoansManagement::route('/{record}/edit'),
         ];
     }
 }

@@ -40,7 +40,8 @@ class MembershipManagementResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::whereHas('info', function ($query) {
-            $query->where('status', 'pending');
+            $query->where('status', 'pending')
+            ->where('is_applied_for_membership', 1);
         })->count();
     }
     public static function getNavigationBadgeColor(): string | array | null
@@ -175,7 +176,10 @@ class MembershipManagementResource extends Resource
             ->modifyQueryUsing(function (Builder $query) {
                 return $query
                     ->where('role', 'user')                              
-                    ->whereHas('info', fn ($q) => $q->where('status', 'Pending')); 
+                    ->whereHas('info', fn ($q) => $q
+                        ->where('status', 'Pending')
+                        ->where('is_applied_for_membership', 1)
+                    ); 
             })
             ->columns([
                 TextColumn::make('info.member_id')
