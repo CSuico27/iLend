@@ -12,7 +12,9 @@
     </head>
     <body>
         <x-notifications />
+        @livewire('partials.nav-bar')
         {{ $slot }}
+        @livewire('partials.footer')
         @livewireScripts
     </body>
 </html>
