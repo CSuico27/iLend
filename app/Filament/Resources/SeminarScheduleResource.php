@@ -25,6 +25,7 @@ use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
 
@@ -124,11 +125,25 @@ class SeminarScheduleResource extends Resource
                         default => 'gray'
                     })
                     ->searchable(),
+                ImageColumn::make('user_avatars')
+                    ->label('Attendees')
+                    ->circular()
+                    ->stacked()
+                    ->limit(3)
+                    ->limitedRemainingText()
+                    ->getStateUsing(function ($record) {
+                        if (!$record->user_ids) return [];
+                        
+                        return User::whereIn('id', $record->user_ids)
+                            ->pluck('avatar') 
+                            ->filter() 
+                            ->take(5) 
+                            ->toArray();
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordAction(null)
             ->filters([])
-
             ->actions([
                 Action::make('viewParticipants')
                     ->label('Attendees')

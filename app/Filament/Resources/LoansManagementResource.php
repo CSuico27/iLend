@@ -34,10 +34,10 @@ class LoansManagementResource extends Resource
 {
     protected static ?string $model = Loan::class;
     protected static ?string $modelLabel = 'Application';
-    protected static ?string $pluralModelLabel = 'Loan Applicants'; 
-    protected static ?string $navigationLabel = 'Loan Application';
+    protected static ?string $pluralModelLabel = 'Loans'; 
+    protected static ?string $navigationLabel = 'Loans';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
-    protected static ?string $navigationGroup = 'Loans Management';
+    // protected static ?string $navigationGroup = 'Loans Management';
     protected static ?int $navigationSort = 3;
 
     /**
@@ -93,28 +93,29 @@ class LoansManagementResource extends Resource
             $set('start_date', $start->toDateString());
             $set('end_date', $end->toDateString());
 
-            $startDate = Carbon::parse($get('start_date'));
-            $paymentFrequency = $get('payment_frequency') ?? 'monthly';
-            $currentLedgers = $get('ledgers') ?? [];
-            $newLedgers = [];
+        //     $startDate = Carbon::parse($get('start_date'));
+        //     $paymentFrequency = $get('payment_frequency') ?? 'monthly';
+        //     $currentLedgers = $get('ledgers') ?? [];
+            
+        //     $newLedgers = [];
 
-            for ($i = 0; $i < $count; $i++) {
-            $existingStatus = $currentLedgers[$i]['status'] ?? 'Pending';
+        //     for ($i = 0; $i < $count; $i++) {
+        //     $existingStatus = $currentLedgers[$i]['status'] ?? 'Pending';
 
-            $newLedgers[] = [
-                'status' => $existingStatus,
-                'due_date' => $startDate->copy()->toDateString(), 
-            ];
+        //     $newLedgers[] = [
+        //         'status' => $existingStatus,
+        //         'due_date' => $startDate->copy()->toDateString(), 
+        //     ];
 
-            $startDate = match ($paymentFrequency) {
-                'daily' => $startDate->addDay(),
-                'weekly' => $startDate->addWeek(),
-                'biweekly' => $startDate->addWeeks(2),
-                'monthly' => $startDate->addMonth(),
-                default => $startDate,
-            };
-            $set('ledgers', $newLedgers);
-        }
+        //     $startDate = match ($paymentFrequency) {
+        //         'daily' => $startDate->addDay(),
+        //         'weekly' => $startDate->addWeek(),
+        //         'biweekly' => $startDate->addWeeks(2),
+        //         'monthly' => $startDate->addMonth(),
+        //         default => $startDate,
+        //     };
+        //     $set('ledgers', $newLedgers);
+        // }
     }
     /**
      * @param array 
@@ -330,35 +331,34 @@ class LoansManagementResource extends Resource
                             ->required(),
                         ]),
 
-                        Repeater::make('ledgers')
-                            ->relationship('ledgers')
-                            ->reactive()
-                            ->deletable(false)
-                            ->reorderable(false)
-                            ->addable(false)
-                            ->schema([
-                            TextInput::make('due_date')
-                                ->label('Due Date')
-                                ->disabled()
-                                ->dehydrated(true),
-                            Select::make('status')
-                                ->label('Payment Status')
-                                ->options([
-                                    'Pending' => 'Pending',
-                                    'Paid' => 'Paid',
-                                ])
-                                ->default('Pending')
-                                ->required()
-                            ])
+                        // Repeater::make('ledgers')
+                        //     ->relationship('ledgers')
+                        //     ->reactive()
+                        //     ->deletable(false)
+                        //     ->reorderable(false)
+                        //     ->addable(false)
+                        //     ->schema([
+                        //     TextInput::make('due_date')
+                        //         ->label('Due Date')
+                        //         ->disabled()
+                        //         ->dehydrated(true),
+                        //     Select::make('status')
+                        //         ->label('Payment Status')
+                        //         ->options([
+                        //             'Pending' => 'Pending',
+                        //             'Paid' => 'Paid',
+                        //         ])
+                        //         ->default('Pending')
+                        //         ->required()
+                        //     ])
                     ]),
-               
             ]);
     }
-    public static function getEloquentQuery(): Builder
-    {
-        return parent::getEloquentQuery()
-            ->where('status', 'Pending');
-    }
+    // public static function getEloquentQuery(): Builder
+    // {
+    //     return parent::getEloquentQuery()
+    //         ->where('status', 'Pending');
+    // }
     public static function table(Table $table): Table
     {
         return $table
@@ -422,7 +422,8 @@ class LoansManagementResource extends Resource
                     // Tables\Actions\ViewAction::make()->modalWidth('2xl'),
                     Tables\Actions\DeleteAction::make(),
                 ]),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(fn ($record) => $record->status === 'Approved'),
             ])
 
             ->bulkActions([
