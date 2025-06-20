@@ -18,6 +18,7 @@ class UserProfile extends Model
         'picture',
         'brgy_clearance',
         'valid_id',
+        'is_applied_for_membership',
         'status',
     ];
     public function user(): BelongsTo

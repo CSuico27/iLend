@@ -5,6 +5,8 @@ use App\Livewire\Auth\ForgotPasswordPage;
 use App\Livewire\Auth\LoginPage;
 use App\Livewire\Auth\RegisterPage;
 use App\Livewire\Auth\ResetPasswordPage;
+use App\Livewire\Client\MembershipPage;
+use App\Livewire\Client\PortalPage;
 use App\Livewire\HomePage;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/forgot', ForgotPasswordPage::class)->name('password.request');
     Route::get('/reset/{token}', ResetPasswordPage::class)->name('password.reset');
     Route::get('/account-verification/{user_id}', AccountVerification::class)->name('account.verify');
+    Route::get('/account/resend-verification', \App\Livewire\Auth\ResendVerificationPage::class)->name('account.resend-verification');
 });
 
 Route::middleware('auth')->group(function (){
@@ -25,10 +28,6 @@ Route::middleware('auth')->group(function (){
         return redirect('/');
     });
 
-    // Route::get('/my-account', AccountPage::class)->name('client.account');
-    // Route::get('/booking/create', Booking::class)->name('client.booking');
-    // Route::get('/success', SuccessPage::class)->name('success');
-    // Route::get('/cancel', CancelPage::class)->name('cancel');
-    // Route::get('/invoice', ClientInvoicePage::class)->name('client.invoice');
-    // Route::get('/calendar', CalendarView::class)->name('client.calendar');
+    Route::get('/membership', MembershipPage::class)->name('client.membership');
+    Route::get('/portal', PortalPage::class)->name('client.portal');
 });

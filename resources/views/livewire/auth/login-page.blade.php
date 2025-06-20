@@ -13,7 +13,8 @@
                 />
                 <x-password label="Password" placeholder="Enter Password" wire:model="password" />
             </div>
-            <div class="flex justify-end md:justify-end">
+            <div class="flex justify-between">
+                <a href="{{ route('account.resend-verification') }}" class="mt-2">Haven’t verified yet?</a>
                 <a href="{{ route('password.request') }}" class="mt-2">Forgot Password?</a>
             </div>
             <div class="w-full flex flex-col justify-center lg:mt-10 mt-6 md:static fixed bottom-10 left-0 px-4">
