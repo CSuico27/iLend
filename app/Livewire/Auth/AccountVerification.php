@@ -3,8 +3,10 @@
 namespace App\Livewire\Auth;
 
 use App\Models\User;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
+#[Title('Account Verification')]
 class AccountVerification extends Component
 {
     public $user;

@@ -8,6 +8,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
         <wireui:scripts />
+        
         {{-- <script src="//unpkg.com/alpinejs" defer></script> --}}
     </head>
     <body>
@@ -16,5 +17,6 @@
         {{ $slot }}
         @livewire('partials.footer')
         @livewireScripts
+        @filepondScripts
     </body>
 </html>
