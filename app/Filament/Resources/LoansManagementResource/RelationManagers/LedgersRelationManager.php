@@ -80,8 +80,8 @@ class LedgersRelationManager extends RelationManager
                         'Paid' => 'success',
                         default => 'gray'
                     }),  
-
             ])
+            ->recordAction(null)
             ->filters([
                 //
             ])

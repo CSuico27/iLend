@@ -18,7 +18,11 @@ class GenerateReportsResource extends Resource
     protected static ?string $model = GenerateReports::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?int $navigationSort = 4;
+    // protected static ?int $navigationSort = 4;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     public static function form(Form $form): Form
     {

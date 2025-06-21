@@ -18,13 +18,21 @@ class SeminarSchedule extends Model
     protected $casts = [
     'user_ids' => 'array',
     ];
-    public function getAssignedUsersNamesAttribute(): array
+    public function getAssignedUsersDataAttribute(): array
     {
         if (empty($this->user_ids)) {
             return [];
         }
 
-        return User::whereIn('id', $this->user_ids)->pluck('name')->toArray();
+        return User::whereIn('id', $this->user_ids)
+            ->get(['name', 'email'])
+            ->map(function ($user) {
+                return [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ];
+            })
+            ->toArray();
     }
 
 }
