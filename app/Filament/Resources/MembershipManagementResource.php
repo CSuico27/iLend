@@ -28,6 +28,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class MembershipManagementResource extends Resource
 {
@@ -244,16 +245,38 @@ class MembershipManagementResource extends Resource
                         ->action(function (array $data, User $record) {
                         $reason = $data['reason'];
 
-                        $record->info?->update(['status' => 'Rejected']);
+                        $info = $record->info;
+
+                        if ($info?->picture) {
+                            Storage::disk('public')->delete($info->picture);
+                        }
+
+                        if ($info?->brgy_clearance) {
+                            Storage::disk('public')->delete($info->brgy_clearance);
+                        }
+
+                        if ($info?->valid_id) {
+                            Storage::disk('public')->delete($info->valid_id);
+                        }
+
+                        $info?->update([
+                            'phone' => null,
+                            'birthdate' => null,
+                            'gender' => null,
+                            'address' => null,
+                            'picture' => null,
+                            'brgy_clearance' => null,
+                            'valid_id' => null,
+                            'is_applied_for_membership' => 0,
+                            'status' => 'Pending',
+                        ]);
 
                         Mail::to($record->email)->send(
                             new MemberStatusNotification($record, 'Rejected', $reason)
                         );
 
-                        $record->delete();
-
                         Notification::make()
-                            ->title('Member rejected and deleted')
+                            ->title('Member has been rejected')
                             ->danger()
                             ->send();
                         }),

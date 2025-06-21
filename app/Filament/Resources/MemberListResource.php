@@ -22,7 +22,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\Section; // Added for wrapping relationship
+use Filament\Forms\Components\Section; 
 
 class MemberListResource extends Resource
 {

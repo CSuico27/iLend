@@ -21,7 +21,11 @@ class MemberLedgerResource extends Resource
     protected static ?string $navigationLabel = 'Member Ledger';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     // protected static ?string $navigationGroup = 'Loans Management';
-    protected static ?int $navigationSort = 4;
+    // protected static ?int $navigationSort = 4;
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
     
     public static function canCreate(): bool
     {

@@ -13,12 +13,13 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SeminarScheduleResource\Pages;
 use App\Mail\SeminarCreatedNotification;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Infolists\Components\Grid as InfolistGrid;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Infolists\Infolist;
@@ -36,7 +37,7 @@ class SeminarScheduleResource extends Resource
     protected static ?string $pluralModelLabel = 'Seminars';
     protected static ?string $navigationLabel = 'Seminar Schedule';
     protected static ?string $navigationIcon = 'heroicon-o-calendar-date-range';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Form $form): Form
     {
@@ -133,12 +134,14 @@ class SeminarScheduleResource extends Resource
                     ->limitedRemainingText()
                     ->getStateUsing(function ($record) {
                         if (!$record->user_ids) return [];
-                        
                         return User::whereIn('id', $record->user_ids)
                             ->pluck('avatar') 
                             ->filter() 
                             ->take(5) 
                             ->toArray();
+                    })
+                    ->action(function ($record, $livewire) {
+                        $livewire->mountTableAction('viewParticipants', $record->getKey());
                     }),
             ])
             ->defaultSort('created_at', 'desc')
@@ -146,28 +149,55 @@ class SeminarScheduleResource extends Resource
             ->filters([])
             ->actions([
                 Action::make('viewParticipants')
-                    ->label('Attendees')
-                    ->button()
+                    ->modalHeading('Attendees')
+                    ->extraAttributes(['style' => 'display: none;'])
                     ->modalSubmitAction(false)
                     ->modalCancelActionLabel('Close')
                     ->modalContent(fn(SeminarSchedule $record): Infolist =>
                         Infolist::make()
-                            ->record($record) 
+                            ->record($record)
                             ->schema([
-                            Section::make()
-                                ->schema([
-                                    \Filament\Infolists\Components\Grid::make(1)
-                                        ->schema(function (SeminarSchedule $record) {
-                                            return collect($record->assigned_users_names ?? [])
-                                                ->map(fn($name) => TextEntry::make($name)->default($name)->label(''))
-                                                ->all();
-                                        }),
-                                ]),
-                        ])
-                    
+                                Section::make()
+                                    ->schema(function (SeminarSchedule $record) {
+                                        return collect($record->assigned_users_data ?? [])
+                                            ->map(fn($user, $index) =>
+                                                InfolistGrid::make(2)
+                                                    ->schema([
+                                                        TextEntry::make("name_{$index}")
+                                                            ->default($user['name'])
+                                                            ->label($index === 0 ? 'Name' : ''),
+                                                        TextEntry::make("email_{$index}")
+                                                            ->default($user['email'])
+                                                            ->label($index === 0 ? 'Email' : ''),
+                                                    ])
+                                            )
+                                            ->values()
+                                            ->all();
+                                    }),
+                            ])
                     ),
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
+                    Action::make('sendEmail')
+                    ->label('Send Email')
+                    ->icon('heroicon-o-envelope')
+                    ->color('primary')
+                    
+                    ->action(function (SeminarSchedule $record) {
+                        $assignedUserIds = $record->user_ids ?? [];
+                        $assignedUsers = User::whereIn('id', $assignedUserIds)->get();
+                        $emailBody = "We look forward to your participation!";
+
+                        foreach ($assignedUsers as $user) {
+                            Mail::to($user->email)->send(new SeminarCreatedNotification($record, $emailBody, $user->name));
+                        }
+                    })
+                    ->successNotificationTitle('Emails sent successfully!')
+                    ->requiresConfirmation()
+                    ->modalIcon('heroicon-o-envelope')
+                    ->modalHeading('Send Email')
+                    ->modalDescription('Are you sure you want to send email notification to all attendees of this seminar?')
+                    ->modalSubmitActionLabel('Send'),
                     Tables\Actions\DeleteAction::make(),
                 ]),
             ])

@@ -319,7 +319,9 @@ class LoansManagementResource extends Resource
                             ->dehydrated(true)
                             ->prefix('₱')
                             ->dehydrateStateUsing(fn ($state) => (float) preg_replace('/[^\d.]/', '', $state ?? '0'))
-                            ->extraAttributes(['class' => 'text-right']),
+                            ->extraAttributes(['class' => 'text-right'])
+                            ->columnSpanFull(),
+                        ]),
                         Select::make('status')
                             ->label('Status')
                             ->options([
@@ -328,8 +330,8 @@ class LoansManagementResource extends Resource
                                 'Rejected' => 'Rejected',
                             ])
                             ->default('Pending')
-                            ->required(),
-                        ]),
+                            ->required()
+                            ->columnSpanFull(),
 
                         // Repeater::make('ledgers')
                         //     ->relationship('ledgers')
@@ -351,7 +353,8 @@ class LoansManagementResource extends Resource
                         //         ->default('Pending')
                         //         ->required()
                         //     ])
-                    ]),
+                    ])->collapsible(fn (string $context): bool => $context === 'edit')
+                    ->collapsed(fn (string $context): bool => $context === 'edit'),
             ]);
     }
     // public static function getEloquentQuery(): Builder
@@ -380,6 +383,7 @@ class LoansManagementResource extends Resource
                     }),
             ])
             ->recordAction(null)
+            ->recordUrl(null)
             ->filters([
                 // 
             ])
@@ -421,9 +425,17 @@ class LoansManagementResource extends Resource
 
                     // Tables\Actions\ViewAction::make()->modalWidth('2xl'),
                     Tables\Actions\DeleteAction::make(),
-                ]),
+                ])->visible(fn ($record) => $record->status === 'Pending'),
+
                 Tables\Actions\EditAction::make()
-                    ->visible(fn ($record) => $record->status === 'Approved'),
+                    ->visible(fn ($record) => $record->status === 'Approved')
+                    ->label('View Ledger')
+                    ->icon('heroicon-m-eye'),
+                ActionGroup::make([
+                    Tables\Actions\DeleteAction::make()
+                        ->visible(fn ($record) => $record->status === 'Approved'),
+                ])
+
             ])
 
             ->bulkActions([

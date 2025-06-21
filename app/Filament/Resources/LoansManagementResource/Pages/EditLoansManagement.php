@@ -13,7 +13,19 @@ class EditLoansManagement extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            // Actions\DeleteAction::make(),
         ];
+    }
+    public function getTitle(): string
+    {
+        return 'Member Ledger'; 
+    }
+    public function getBreadcrumb(): string
+    {
+        return 'View Ledger';
+    }
+    protected function getFormActions(): array
+    {
+        return [];
     }
 }

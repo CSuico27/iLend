@@ -18,15 +18,15 @@ class ListSeminarSchedules extends ListRecords
     {
         return [
             CreateAction::make()
-                ->after(function ($record, $data) {
-                    $assignedUserIds = $data['user_ids'] ?? [];
-                    $assignedUsers = User::whereIn('id', $assignedUserIds)->get();
-                    $emailBody = "We look forward to your participation!";
+            //     ->after(function ($record, $data) {
+            //         $assignedUserIds = $data['user_ids'] ?? [];
+            //         $assignedUsers = User::whereIn('id', $assignedUserIds)->get();
+            //         $emailBody = "We look forward to your participation!";
 
-                    foreach ($assignedUsers as $user) {
-                        Mail::to($user->email)->send(new SeminarCreatedNotification($record, $emailBody, $user->name));
-                }
-            }),
+            //         foreach ($assignedUsers as $user) {
+            //             Mail::to($user->email)->send(new SeminarCreatedNotification($record, $emailBody, $user->name));
+            //     }
+            // }),
         ];
     }
 }
