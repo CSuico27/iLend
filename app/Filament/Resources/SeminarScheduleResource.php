@@ -25,6 +25,7 @@ use Filament\Tables\Columns\BadgeColumn;
 use Filament\Infolists\Infolist;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Model;
@@ -179,29 +180,31 @@ class SeminarScheduleResource extends Resource
                 ActionGroup::make([
                     Tables\Actions\EditAction::make(),
                     Action::make('sendEmail')
-                    ->label('Send Email')
-                    ->icon('heroicon-o-envelope')
-                    ->color('primary')
-                    
-                    ->action(function (SeminarSchedule $record) {
-                        $assignedUserIds = $record->user_ids ?? [];
-                        $assignedUsers = User::whereIn('id', $assignedUserIds)->get();
-                        $emailBody = "We look forward to your participation!";
+                        ->label('Send Email')
+                        ->icon('heroicon-o-envelope')
+                        ->color('primary')
+                        ->action(function (SeminarSchedule $record) {
+                            $assignedUserIds = $record->user_ids ?? [];
+                            $assignedUsers = User::whereIn('id', $assignedUserIds)->get();
+                            $emailBody = "We look forward to your participation!";
 
-                        foreach ($assignedUsers as $user) {
-                            Mail::to($user->email)->send(new SeminarCreatedNotification($record, $emailBody, $user->name));
-                        }
-                    })
-                    ->successNotificationTitle('Emails sent successfully!')
-                    ->requiresConfirmation()
-                    ->modalIcon('heroicon-o-envelope')
-                    ->modalHeading('Send Email')
-                    ->modalDescription('Are you sure you want to send email notification to all attendees of this seminar?')
-                    ->modalSubmitActionLabel('Send'),
+                            foreach ($assignedUsers as $user) {
+                                Mail::to($user->email)->send(new SeminarCreatedNotification($record, $emailBody, $user->name));
+                            }
+                            Notification::make()
+                                ->title('Email sent successfully!')
+                                ->success()
+                                ->send();
+                        })
+                        ->successNotificationTitle('Email sent successfully!')
+                        ->requiresConfirmation()
+                        ->modalIcon('heroicon-o-envelope')
+                        ->modalHeading('Send Email')
+                        ->modalDescription('Are you sure you want to send email notification to all attendees of this seminar?')
+                        ->modalSubmitActionLabel('Send'),
                     Tables\Actions\DeleteAction::make(),
                 ]),
             ])
-
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

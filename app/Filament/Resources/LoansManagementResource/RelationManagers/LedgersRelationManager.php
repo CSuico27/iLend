@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\LoansManagementResource\RelationManagers;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Tables\Actions\Action; 
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -34,11 +36,9 @@ class LedgersRelationManager extends RelationManager
             ->recordTitleAttribute('loan')
             ->columns([
                 TextColumn::make('loan.user.info.member_id')
-                    ->label('Member ID')
-                    ->searchable(),
+                    ->label('Member ID'),
                 TextColumn::make('loan.user.name')
-                    ->label('Name')
-                    ->searchable(),
+                    ->label('Name'),
                 TextColumn::make('loan.loan_amount')
                     ->label('Loan Amount')
                     ->money('PHP'),
@@ -78,6 +78,7 @@ class LedgersRelationManager extends RelationManager
                     ->color(fn (string $state): string => match($state) {
                         'Pending' => 'warning',
                         'Paid' => 'success',
+                        'Due' => 'danger',
                         default => 'gray'
                     }),  
             ])
@@ -86,11 +87,28 @@ class LedgersRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
+                Action::make('Export Ledger PDF')
+                ->label('Export as PDF')
+                ->action(function ($livewire) {
+                    $loan = $livewire->getOwnerRecord();
+
+                    $pdf = Pdf::loadView('pdf.show-ledger', [
+                        'loan' => $loan,
+                        'ledgersCollection' => $loan->ledgers->values(),
+                    ]);
+
+                    return response()->streamDownload(
+                        fn () => print($pdf->stream()),
+                        'loan-ledger.pdf'
+                    );
+                })
+                ->icon('heroicon-o-arrow-down-tray')
+                ->openUrlInNewTab(),
                 // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                // Tables\Actions\EditAction::make(),
+                // Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
