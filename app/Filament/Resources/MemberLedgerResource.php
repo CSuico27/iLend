@@ -105,6 +105,7 @@ class MemberLedgerResource extends Resource
                     ->color(fn (string $state): string => match($state) {
                         'Pending' => 'warning',
                         'Paid' => 'success',
+                        'Due' => 'danger',
                         default => 'gray'
                     }),  
             ])

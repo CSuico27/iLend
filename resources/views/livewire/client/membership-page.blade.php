@@ -4,36 +4,36 @@
             <!-- Stepper -->
             <div>
                 <!-- Stepper Nav -->
-                <ul class="relative flex flex-row gap-x-2">
-                <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group">
-                    <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
-                    <span class="size-7 flex justify-center items-center shrink-0 font-medium rounded-full {{ $currentStep == 1 || $isFinishedStepOne == true ? 'bg-blue-600 text-white' : 'text-gray-800'}}">
-                        <span class="{{ $isFinishedStepOne == true ? 'hidden' : ''}}">1</span>
-                        <svg class="flex-shrink-0 size-3 {{ $isFinishedStepOne == true ? 'block' : 'hidden'}}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                    </span>
-                    <span class="ms-2 text-xs lg:text-sm font-medium text-gray-800">
-                        Personal Details
-                    </span>
-                    </span>
-                    <div class="w-full h-px flex-1 {{ $isFinishedStepOne == true ? 'bg-blue-600' : 'bg-gray-200'}}"></div>
-                </li>
-            
-                <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group">
-                    <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
-                    <span class="size-7 flex justify-center items-center shrink-0 font-medium rounded-full {{ $currentStep == 2 || $isFinishedStepOne == true ? 'bg-blue-600 text-white' : 'text-gray-800'}}">
-                        <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">2</span>
-                        <svg class="hidden shrink-0 size-3 hs-stepper-success:block" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                    </span>
-                    <span class="ms-2 text-xs lg:text-sm font-medium text-gray-800">
-                        Valid ID / Proof of Identity
-                    </span>
-                    </span>
-                    <div class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600 dark:bg-neutral-700 dark:hs-stepper-success:bg-blue-600 dark:hs-stepper-completed:bg-teal-600"></div>
-                </li>
+                <ul class="relative flex flex-row gap-x-2 mb-4">
+                    <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group">
+                        <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
+                        <span class="size-7 flex justify-center items-center shrink-0 font-medium rounded-full {{ $currentStep == 1 || $isFinishedStepOne == true ? 'bg-blue-600 text-white' : 'text-gray-800'}}">
+                            <span class="{{ $isFinishedStepOne == true ? 'hidden' : ''}}">1</span>
+                            <svg class="flex-shrink-0 size-3 {{ $isFinishedStepOne == true ? 'block' : 'hidden'}}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        <span class="ms-2 text-xs lg:text-sm font-medium text-gray-800">
+                            Personal Details
+                        </span>
+                        </span>
+                        <div class="w-full h-px flex-1 {{ $isFinishedStepOne == true ? 'bg-blue-600' : 'bg-gray-200'}}"></div>
+                    </li>
+                
+                    <li class="flex items-center gap-x-2 shrink basis-0 flex-1 group">
+                        <span class="min-w-7 min-h-7 group inline-flex items-center text-xs align-middle">
+                        <span class="size-7 flex justify-center items-center shrink-0 font-medium rounded-full {{ $currentStep == 2 || $isFinishedStepOne == true ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'}}">
+                            <span class="hs-stepper-success:hidden hs-stepper-completed:hidden">2</span>
+                            <svg class="hidden shrink-0 size-3 hs-stepper-success:block" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </span>
+                        <span class="ms-2 text-xs lg:text-sm font-medium text-gray-800">
+                            Valid ID / Proof of Identity
+                        </span>
+                        </span>
+                        <div class="w-full h-px flex-1 bg-gray-200 group-last:hidden hs-stepper-success:bg-blue-600 hs-stepper-completed:bg-teal-600 dark:bg-neutral-700 dark:hs-stepper-success:bg-blue-600 dark:hs-stepper-completed:bg-teal-600"></div>
+                    </li>
             
                 <!-- End Item -->
                 </ul>
