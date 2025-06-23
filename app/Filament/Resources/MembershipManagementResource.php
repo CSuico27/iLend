@@ -219,7 +219,10 @@ class MembershipManagementResource extends Resource
                         ->modalDescription('Are you sure you want to approve this member?')
                         ->visible(fn (User $record) => $record->info?->status === 'Pending')
                         ->action(function (User $record) {
-                            $record->info->update(['status' => 'Approved']);
+                            $record->info->update([
+                                'status' => 'Approved',
+                                'approved_at' => now()
+                            ]);
                             Mail::to($record->email)->send(
                                 new MemberStatusNotification($record, 'Approved')
                             );
@@ -267,6 +270,8 @@ class MembershipManagementResource extends Resource
                             'picture' => null,
                             'brgy_clearance' => null,
                             'valid_id' => null,
+                            'tin_number' => null,
+                            'approved_at' => null,
                             'is_applied_for_membership' => 0,
                             'status' => 'Pending',
                         ]);

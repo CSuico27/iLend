@@ -18,6 +18,8 @@ class UserProfile extends Model
         'picture',
         'brgy_clearance',
         'valid_id',
+        'tin_number',
+        'approved_at',
         'is_applied_for_membership',
         'status',
     ];

@@ -181,7 +181,10 @@ class LoansManagementResource extends Resource
                             titleAttribute: 'name',
                             modifyQueryUsing: fn ($query) => $query
                                 ->where('role', '!=', 'admin') 
-                                ->whereHas('info', fn ($q) => $q->where('status', 'Approved')) 
+                                ->whereHas('info', fn ($q) => $q
+                                    ->where('status', 'Approved')
+                                    ->where('approved_at', '<=', Carbon::now()->subYear())
+                                ) 
                         )
                         ->required(),
 
@@ -295,7 +298,7 @@ class LoansManagementResource extends Resource
                             ->default(fn (Get $get) => now()->addMonths((int) $get('loan_term'))),
 
                         TextInput::make('interest_amount')
-                            ->label('Interest Amount')
+                            ->label('Kabuuang Interest')
                             ->disabled()
                             ->reactive()
                             ->prefix('₱') 
@@ -304,7 +307,7 @@ class LoansManagementResource extends Resource
                             ->extraAttributes(attributes: ['class' => 'text-right']), 
 
                         TextInput::make('total_payment')
-                            ->label('Total Payment')
+                            ->label('Kabuuang Babayaran')
                             ->disabled()  
                             ->reactive()
                             ->prefix('₱')
@@ -313,7 +316,7 @@ class LoansManagementResource extends Resource
                             ->extraAttributes(['class' => 'text-right']),
 
                         TextInput::make('payment_per_term')
-                            ->label('Payment Amount Per Term')
+                            ->label('Halagang Babayaran kada Hulugan')
                             ->disabled() 
                             ->reactive()
                             ->dehydrated(true)
@@ -433,6 +436,7 @@ class LoansManagementResource extends Resource
                     ->icon('heroicon-m-eye'),
                 ActionGroup::make([
                     Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Loan')
                         ->visible(fn ($record) => $record->status === 'Approved'),
                 ])
 

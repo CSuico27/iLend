@@ -122,6 +122,14 @@
                                     <p class="font-semibold">Valid Government ID</p>
                                     <x-filepond::upload wire:model="valid_id" />
                                 </div>
+                                <div>
+                                    <x-maskable 
+                                        wire:model.blur="tin_number"
+                                        label="TIN Number" 
+                                        mask="###-###-###-#####" 
+                                        placeholder="TIN Number" 
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
