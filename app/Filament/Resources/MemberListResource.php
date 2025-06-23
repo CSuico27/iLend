@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MemberListResource\Pages;
 use App\Filament\Resources\MemberListResource\RelationManagers;
 use App\Models\User;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -66,16 +67,38 @@ class MemberListResource extends Resource
                     ->label('Name')
                     ->searchable(),
                 TextColumn::make('email')->label('Email'),
-                TextColumn::make('info.status')
-                    ->label('Status')
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                TextColumn::make('info.approved_at')
+                    ->label('Date Approved')
+                    ->date('M j, Y'),
+                TextColumn::make('membershipDuration')
                     ->badge()
-                    ->color(fn (string $state): string => match($state) {
-                        'Pending' => 'warning',
-                        'Approved' => 'success',
-                        'Rejected' => 'danger',
-                        default => 'gray'
-                    }),
+                    ->label('Membership Duration')
+                   ->getStateUsing(function ($record) {
+                        if (!$record->info?->approved_at) return null;
+
+                        $approvedAt = Carbon::parse($record->info->approved_at);
+                        $diff = $approvedAt->diff(now());
+
+                        $years = $diff->y;
+                        $months = $diff->m;
+
+                        if ($years === 0 && $months === 0) {
+                            return 'Less than a month';
+                        }
+
+                        $text = [];
+
+                        if ($years > 0) {
+                            $text[] = $years . ' year' . ($years > 1 ? 's' : '');
+                        }
+
+                        if ($months > 0) {
+                            $text[] = $months . ' month' . ($months > 1 ? 's' : '');
+                        }
+
+                        return implode(' and ', $text);
+                    })
+                    ->color('success'),
             ])
             ->filters([
                 //
@@ -142,6 +165,18 @@ class MemberListResource extends Resource
                                                     ->directory('valid-ids')
                                                     ->openable()
                                                     ->disabled(),
+                                                TextInput::make('tin_number') 
+                                                    ->label('TIN Number')
+                                                    ->disabled()
+                                                    ->formatStateUsing(function (?string $state): ?string {
+                                                        if ($state && strlen($state) === 14 && ctype_digit($state)) {
+                                                            return substr($state, 0, 3) . '-' . 
+                                                                   substr($state, 3, 3) . '-' . 
+                                                                   substr($state, 6, 3) . '-' . 
+                                                                   substr($state, 9, 5);
+                                                        }
+                                                        return $state;
+                                                    }),
                                             ]),
                                     ]),
                                 ])

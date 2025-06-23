@@ -12,7 +12,7 @@ class MembershipPage extends Component
     use WithFilePond;
 
     public $name, $email, $phone, $birthdate, $gender, $address;
-    public $picture, $barangay_clearance, $valid_id;
+    public $picture, $barangay_clearance, $valid_id, $tin_number;
 
     public int $currentStep;
     public bool $isFinishedStepOne;
@@ -62,6 +62,7 @@ class MembershipPage extends Component
         'picture' => 'required|file|image|max:2048',
         'barangay_clearance' => 'required|file|max:2048',
         'valid_id' => 'required|file|max:2048',
+        'tin_number' => 'required|string',
     ];
 
     public function save()
@@ -93,6 +94,7 @@ class MembershipPage extends Component
         $profile->birthdate = $this->birthdate;
         $profile->gender = $this->gender;
         $profile->address = $this->address;
+        $profile->tin_number = $this->tin_number;
         $profile->is_applied_for_membership = true;
         $profile->status = 'Pending';
 

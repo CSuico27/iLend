@@ -3,15 +3,23 @@
 namespace App\Filament\Resources\LoansManagementResource\RelationManagers;
 
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\Action; 
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class LedgersRelationManager extends RelationManager
 {
@@ -107,6 +115,87 @@ class LedgersRelationManager extends RelationManager
                 // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
+                Action::make('pay')
+                    ->label('Pay')
+                    ->color('success')
+                    ->icon('heroicon-o-banknotes')
+                    ->form([
+                        TextInput::make('amount')
+                            ->label('Amount')
+                            ->default(fn ($record) => $record->loan->payment_per_term)
+                            ->disabled()
+                            ->dehydrated() 
+                            ->numeric()
+                            ->required()
+                            ->prefix('₱')
+                            ->mask(RawJs::make(<<<'JS'
+                                $money($input, '.', ',', 2)
+                                JS
+                                                    ))
+                            ->stripCharacters([',']),
+                        Select::make('payment_method')
+                            ->label('Payment Method')
+                            ->options([
+                                'Cash' => 'Cash',
+                                'Gcash' => 'Gcash',
+                                'Bank Transfer' => 'Bank Transfer',
+                            ])
+                            ->required(),
+                        DatePicker::make('date_received')
+                            ->default(now())
+                            ->required(),
+                    ])
+                    ->action(function (array $data, $record) {
+                        $payment = $record->payment()->create([
+                            'amount' => $data['amount'],
+                            'payment_method' => $data['payment_method'],
+                            'date_received' => $data['date_received'],
+                        ]);
+
+                        $pdf = Pdf::loadView('pdf.receipt', [
+                            'ledger' => $record,
+                            'loan' => $record->loan,
+                            'user' => $record->loan->user,
+                        ]);
+
+                        $receiptPath = 'receipts/' . $payment->id . '.pdf';
+                        Storage::disk('public')->put($receiptPath, $pdf->output());
+
+                        $payment->receipt = $receiptPath;
+                        $payment->save();
+
+                        $record->update(['status' => 'Paid']);
+
+                        Notification::make()
+                            ->title('Payment Successful')
+                            ->success()
+                            ->send();
+                    })->visible(function ($record) {
+                        $hasUnpaidEarlierLedger = $record->loan
+                            ->ledgers()
+                            ->where('due_date', '<', $record->due_date)
+                            ->where('status', '!=', 'Paid')
+                            ->exists();
+
+                        return $record->status !== 'Paid' && !$hasUnpaidEarlierLedger;
+                    }),
+                    Action::make('downloadReceipt')
+                        ->label('Receipt')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('primary')
+                        ->visible(fn ($record) => $record->status === 'Paid' && optional($record->payment)->receipt)
+                        ->action(function ($record) {
+                            $receiptPath = optional($record->payment)->receipt;
+
+                            if ($receiptPath && Storage::disk('public')->exists($receiptPath)) {
+                                $filename = basename($receiptPath);
+                                return response()->streamDownload(
+                                    fn () => print(Storage::disk('public')->get($receiptPath)),
+                                    $filename
+                                );
+                            }
+                        })
+                        ->openUrlInNewTab()
                 // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
             ])

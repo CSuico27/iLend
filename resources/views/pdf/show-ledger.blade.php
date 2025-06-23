@@ -54,18 +54,34 @@
             border: none;
             padding: 4px 6px;
         }
+        .header-color {
+            background-color: #fe0002;
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
-    <h1>Name: {{ $loan->user->name ?? 'N/A' }}</h1>
-    <h1>Member ID: {{ $loan->user->info->member_id ?? 'N/A' }}</h1>
+    <h1 class="text-right">Name: {{ $loan->user->name ?? 'N/A' }}</h1>
+    <h1 class="text-right">Member ID: {{ $loan->user->info->member_id ?? 'N/A' }}</h1>
     <h2>Loan Application Details</h2>
     <div class="section">
         <table class="no-border">
-            <tr><td>Loan Amount</td><td class="text-right">₱{{ number_format($loanAmount, 2) }}</td></tr>
-            <tr><td>Interest Rate</td><td class="text-right">{{ $interestRate }}%</td></tr>
-            <tr><td>Loan Term</td><td class="text-right">{{ $loanTerm }}</td></tr>
-            <tr><td>Number of Payments</td><td class="text-right">{{ $ledgersCollection->count() }}</td></tr>
+            <tr>
+                <td>Loan Amount</td>
+                <td class="text-right">₱{{ number_format($loanAmount, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Interest Rate</td>
+                <td class="text-right">{{ $interestRate }}%</td>
+            </tr>
+            <tr>
+                <td>Loan Term</td>
+                <td class="text-right">{{ $loanTerm }}</td>
+            </tr>
+            <tr>
+                <td>Number of Payments</td>
+                <td class="text-right">{{ $ledgersCollection->count() }}</td>
+            </tr>
             <tr>
                 <td>Start Date of Payment</td>
                 <td class="text-right">
@@ -73,7 +89,7 @@
                         $startDateFormatted = 'N/A';
                         try {
                             if ($loan->start_date) {
-                                $startDateFormatted = Carbon::parse($loan->start_date)->format('F j, Y');
+                                $startDateFormatted = Carbon::parse($loan->start_date)->format('M j, Y');
                             }
                         } catch (\Exception $e) {
                             $startDateFormatted = 'Invalid Date';
@@ -88,19 +104,34 @@
     <h2>Loan Summary</h2>
     <div class="section">
         <table class="no-border">
-            <tr><td>Scheduled Payment</td><td class="text-right">₱{{ number_format($paymentPerTerm, 2) }}</td></tr>
-            <tr><td>Scheduled Number of Payments</td><td class="text-right">{{ $ledgersCollection->count() }}</td></tr>
-            <tr><td>Total Loan Payable</td><td class="text-right">₱{{ number_format($totalPayment, 2) }}</td></tr>
-            <tr><td>Total Interest</td><td class="text-right">₱{{ number_format($interestAmount, 2) }}</td></tr>
-            <tr><td>Lender</td><td class="text-right">iLEND</td></tr>
+            <tr>
+                <td>Scheduled Payment</td>
+                <td class="text-right">₱{{ number_format($paymentPerTerm, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Scheduled Number of Payments</td>
+                <td class="text-right">{{ $ledgersCollection->count() }}</td>
+            </tr>
+            <tr>
+                <td>Total Loan Payable</td>
+                <td class="text-right">₱{{ number_format($totalPayment, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Total Interest</td>
+                <td class="text-right">₱{{ number_format($interestAmount, 2) }}</td>
+            </tr>
+            <tr>
+                <td>Lender</td>
+                <td class="text-right">iLEND</td>
+            </tr>
         </table>
     </div>
 
     <h2>Loan Ledger</h2>
-    <div class="section">
+    <div>
         <table>
             <thead>
-                <tr>
+                <tr class="header-color">
                     <th>#</th>
                     <th>Payment Date</th>
                     <th>Scheduled Payment</th>
