@@ -374,16 +374,38 @@ class LoansManagementResource extends Resource
                 TextColumn::make('loan_amount')
                     ->label('Requested Loan')
                     ->money('PHP'),
-                TextColumn::make('status')
-                    ->label('Status')
-                    ->formatStateUsing(fn (string $state): string => ucfirst($state))
-                    ->badge()
-                    ->color(fn (string $state): string => match($state) {
-                        'Pending' => 'warning',
-                        'Approved' => 'success',
-                        'Rejected' => 'danger',
-                        default => 'gray'
+                TextColumn::make('interest_rate')
+                    ->label('Interest Rate')
+                    ->suffix('%'),
+                TextColumn::make('loan_term')
+                    ->label('Loan Term')
+                    ->formatStateUsing(fn(?string $state): string => match($state){
+                        '3' => '3 months',
+                        '6' => '6 months',
+                        '9' => '9 months',
+                        '12' => '12 months',
+                        '24' => '24 months',
                     }),
+                TextColumn::make('payment_frequency')
+                    ->label('Payment Frequency')
+                    ->formatStateUsing(fn (?string $state): string => match($state) {
+                        'daily' => 'Daily',
+                        'weekly' => 'Weekly',
+                        'biweekly' => 'Bi-weekly',
+                        'monthly' => 'Monthly',
+                        default => ucfirst($state ?? 'Unknown')
+                    })
+                    ->badge(),
+                // TextColumn::make('status')
+                //     ->label('Status')
+                //     ->formatStateUsing(fn (string $state): string => ucfirst($state))
+                //     ->badge()
+                //     ->color(fn (string $state): string => match($state) {
+                //         'Pending' => 'warning',
+                //         'Approved' => 'success',
+                //         'Rejected' => 'danger',
+                //         default => 'gray'
+                //     }),
             ])
             ->recordAction(null)
             ->recordUrl(null)
