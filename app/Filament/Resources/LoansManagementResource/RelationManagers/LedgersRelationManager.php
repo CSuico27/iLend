@@ -38,6 +38,26 @@ class LedgersRelationManager extends RelationManager
             ]);
     }
 
+    private function updateLoanFinishedStatus($loan)
+    {
+        $totalLedgers = $loan->ledgers()->count();
+        $paidLedgers = $loan->ledgers()->where('status', 'Paid')->count();
+        
+        $isFinished = ($totalLedgers > 0 && $totalLedgers === $paidLedgers);
+        
+        if ($loan->is_finished !== $isFinished) {
+            $loan->update(['is_finished' => $isFinished]);
+            
+            if ($isFinished) {
+                Notification::make()
+                    ->title('Loan Completed!')
+                    ->body("Loan for {$loan->user->name} has been fully paid.")
+                    ->success()
+                    ->send();
+            }
+        }
+    }
+
     public function table(Table $table): Table
     {
         return $table
@@ -165,6 +185,8 @@ class LedgersRelationManager extends RelationManager
                         $payment->save();
 
                         $record->update(['status' => 'Paid']);
+
+                        $this->updateLoanFinishedStatus($record->loan);
 
                         Notification::make()
                             ->title('Payment Successful')

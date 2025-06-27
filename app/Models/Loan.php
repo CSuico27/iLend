@@ -22,6 +22,7 @@ class Loan extends Model
         'status',
         'start_date',
         'end_date',
+        'is_finished',
     ];
     public function ledgers()
     {
