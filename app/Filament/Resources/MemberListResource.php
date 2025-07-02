@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\MemberListResource\Pages;
-use App\Filament\Resources\MemberListResource\RelationManagers;
 use App\Models\User;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -12,7 +11,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
@@ -20,10 +18,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\View;
 use Filament\Tables\Actions\ActionGroup;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\Section; 
 
 class MemberListResource extends Resource
 {
@@ -31,9 +29,6 @@ class MemberListResource extends Resource
     protected static ?string $pluralModelLabel = 'Approved Members';
     protected static ?string $navigationLabel = 'Member List';
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
-
-    // protected static ?string $navigationGroup = 'Member';
-
     protected static ?int $navigationSort = 2;
 
     public static function getEloquentQuery(): Builder
@@ -43,6 +38,7 @@ class MemberListResource extends Resource
                 $query->where('status', 'approved');
             });
     }
+
     public static function canCreate(): bool
     {
         return false;
@@ -50,30 +46,21 @@ class MemberListResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                //
-            ]);
+        return $form->schema([]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('info.member_id')
-                    ->label('Member ID')
-                    ->searchable(),
-                TextColumn::make('name')
-                    ->label('Name')
-                    ->searchable(),
+                TextColumn::make('info.member_id')->label('Member ID')->searchable(),
+                TextColumn::make('name')->label('Name')->searchable(),
                 TextColumn::make('email')->label('Email'),
-                TextColumn::make('info.approved_at')
-                    ->label('Date Approved')
-                    ->date('M j, Y'),
+                TextColumn::make('info.approved_at')->label('Date Approved')->date('M j, Y'),
                 TextColumn::make('membershipDuration')
                     ->badge()
                     ->label('Membership Duration')
-                   ->getStateUsing(function ($record) {
+                    ->getStateUsing(function ($record) {
                         if (!$record->info?->approved_at) return null;
 
                         $approvedAt = Carbon::parse($record->info->approved_at);
@@ -100,9 +87,7 @@ class MemberListResource extends Resource
                     })
                     ->color('success'),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()
@@ -111,80 +96,91 @@ class MemberListResource extends Resource
                         ->record(fn (User $record) => $record->load('info'))
                         ->form([
                             TextInput::make('name')
-                                ->label(false)
-                                ->required(),
-                            Grid::make('Member Information') 
-                                ->relationship('info') 
-                                ->schema([
-                                    Tabs::make('Member Info')->tabs([
-                                        Tab::make('Details')
-                                            ->schema([
-                                                Grid::make(2)->schema([
-                                                    TextInput::make('phone') 
-                                                        ->label('Phone')
-                                                        ->disabled(),
+                                        ->label(false)
+                                        ->required(),
+                            Tabs::make('Profile Tabs')->tabs([
+                                Tab::make('Member Info')->schema([
+                                    Grid::make('Member Information')
+                                        ->relationship('info')
+                                        ->schema([
+                                            Tabs::make('Info Tabs')->tabs([
+                                                Tab::make('Details')->schema([
+                                                    Grid::make(2)->schema([
+                                                        TextInput::make('phone')
+                                                            ->label('Phone')
+                                                            ->disabled(),
 
-                                                    DatePicker::make('birthdate') 
-                                                        ->label('Birthdate')
+                                                        DatePicker::make('birthdate')
+                                                            ->label('Birthdate')
+                                                            ->disabled(),
+                                                    ]),
+                                                    Select::make('gender')
+                                                        ->label('Gender')
+                                                        ->options([
+                                                            'Male' => 'Male',
+                                                            'Female' => 'Female',
+                                                            'Not Specified' => 'Not Specified',
+                                                        ])
+                                                        ->disabled(),
+                                                    TextInput::make('address')
+                                                        ->label('Address')
                                                         ->disabled(),
                                                 ]),
-                                                Select::make('gender') 
-                                                    ->label('Gender')
-                                                    ->options([
-                                                        'Male' => 'Male',
-                                                        'Female' => 'Female',
-                                                        'Not Specified' => 'Not Specified',
-                                                    ])
-                                                    ->disabled(),
-                                                TextInput::make('address') 
-                                                    ->label('Address')
-                                                    ->disabled(),
-                                            ]),
-                                        Tab::make('Requirements Submitted')
-                                            ->schema([
-                                                FileUpload::make('picture') 
-                                                    ->label('2x2 Picture')
-                                                    ->image()
-                                                    ->disk('public')
-                                                    ->directory('user-picture')
-                                                    ->openable()
-                                                    ->disabled(),
 
-                                                FileUpload::make('brgy_clearance')
-                                                    ->label('Barangay Clearance')
-                                                    ->image()
-                                                    ->disk('public')
-                                                    ->directory('brgy-clearance')
-                                                    ->openable()
-                                                    ->disabled(),
+                                                Tab::make('Requirements Submitted')->schema([
+                                                    FileUpload::make('picture')
+                                                        ->label('2x2 Picture')
+                                                        ->image()
+                                                        ->disk('public')
+                                                        ->directory('user-picture')
+                                                        ->openable()
+                                                        ->disabled(),
 
-                                                FileUpload::make('valid_id') 
-                                                    ->label('Valid ID')
-                                                    ->image()
-                                                    ->disk('public')
-                                                    ->directory('valid-ids')
-                                                    ->openable()
-                                                    ->disabled(),
-                                                TextInput::make('tin_number') 
-                                                    ->label('TIN Number')
-                                                    ->disabled()
-                                                    ->formatStateUsing(function (?string $state): ?string {
-                                                        if ($state && strlen($state) === 14 && ctype_digit($state)) {
-                                                            return substr($state, 0, 3) . '-' . 
-                                                                   substr($state, 3, 3) . '-' . 
-                                                                   substr($state, 6, 3) . '-' . 
-                                                                   substr($state, 9, 5);
-                                                        }
-                                                        return $state;
-                                                    }),
+                                                    FileUpload::make('brgy_clearance')
+                                                        ->label('Barangay Clearance')
+                                                        ->image()
+                                                        ->disk('public')
+                                                        ->directory('brgy-clearance')
+                                                        ->openable()
+                                                        ->disabled(),
+
+                                                    FileUpload::make('valid_id')
+                                                        ->label('Valid ID')
+                                                        ->image()
+                                                        ->disk('public')
+                                                        ->directory('valid-ids')
+                                                        ->openable()
+                                                        ->disabled(),
+
+                                                    TextInput::make('tin_number')
+                                                        ->label('TIN Number')
+                                                        ->disabled()
+                                                        ->formatStateUsing(function (?string $state): ?string {
+                                                            if ($state && strlen($state) === 14 && ctype_digit($state)) {
+                                                                return substr($state, 0, 3) . '-' .
+                                                                    substr($state, 3, 3) . '-' .
+                                                                    substr($state, 6, 3) . '-' .
+                                                                    substr($state, 9, 5);
+                                                            }
+                                                            return $state;
+                                                        }),
+                                                ]),
                                             ]),
-                                    ]),
-                                ])
-                                ->columnSpanFull(), 
+                                        ])
+                                        ->columnSpanFull(),
+                                ]),
+                                Tab::make('Loan History')->schema([
+                                    View::make('livewire.pages.loan-history')
+                                        ->viewData(fn ($record) => [
+                                            'loans' => $record->loans()->orderBy('created_at', 'desc')->get(),
+                                        ]),
+                            ]),
+                            ]),
                         ]),
                     Tables\Actions\DeleteAction::make(),
                 ]),
-            ])->recordAction(null)
+            ])
+            ->recordAction(null)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
@@ -194,9 +190,7 @@ class MemberListResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
