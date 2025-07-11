@@ -35,7 +35,79 @@
             
             <div class="mt-3">
                 @if ($activeTab === 'dashboard')
-                    <div class="w-full h-auto mt-5">
+                    <div class="w-full h-auto mt-5 space-y-4">
+                        <div class="flex justify-end">
+                            @if ($this->canApply)
+                               <x-button
+                                    label="Apply for Loan"
+                                    class="w-full lg:w-auto bg-red-600 hover:bg-red-400 focus:bg-red-400 focus:ring-red-400"
+                                    wire:click="openLoanApplicationModal"
+                                >
+                                </x-button>
+
+                                <x-modal-card title="Loan Application" wire:model="showLoanApplicationModal">
+                                    <form id="loanApplicationForm" wire:submit.prevent="submitLoanApplication" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="sm:col-span-2">
+                                            <x-input label="Pangalan ng Umutang" placeholder="Your full name" wire:model="user_name" readonly />
+                                        </div>
+                                        <x-select
+                                            label="Loan Type"
+                                            placeholder="Select loan type"
+                                            wire:model.live="loan_type"
+                                            :options="[
+                                                'regular' => 'Regular Loan',
+                                                'emergency' => 'Emergency Loan',
+                                                'car' => 'Car Loan',
+                                            ]"
+                                        />
+                                        <x-currency
+                                            label="Loan Amount"
+                                            placeholder="Loan Amount"
+                                            wire:model.live="loan_amount" 
+                                            prefix="₱"
+                                        />
+                                        <x-input label="Interest Rate" placeholder="Interest Rate" wire:model.live="interest_rate" /> 
+                                        <x-input label="Tagal ng Buwan" placeholder="Loan Duration" wire:model.live="loan_term" /> 
+                                        <x-select
+                                            label="Payment Frequency"
+                                            placeholder="Select payment frequency"
+                                            wire:model.live="payment_frequency"
+                                            :options="[
+                                                'daily' => 'daily',
+                                                'weekly' => 'weekly',
+                                                'biweekly' => 'biweekly',
+                                                'monthly'=> 'monthly'
+                                            ]"
+                                        />
+                                        <x-input label="Date ng Unang Bayad" placeholder="First Payment Date" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
+                                        <x-input label="Date ng Huling Bayad" placeholder="Last Payment Date" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
+                                        <x-input label="Kabuuang Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly />
+                                        <x-input label="Kabuuang Babayaran" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
+                                        <x-input label="Halagang Babayaran Kada Hulugan" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly />
+                                    </form>
+                                    <x-slot name="footer" class="flex justify-between gap-x-4">
+                                        {{-- <x-button flat negative label="Delete" x-on:click="close" />  --}}
+
+                                        <div class="flex gap-x-4 ml-auto">
+                                            <x-button flat label="Cancel" x-on:click="close" />
+
+                                            <x-button
+                                                primary
+                                                label="Save"
+                                                type="submit" 
+                                                form="loanApplicationForm" 
+                                                wire:target="submitLoanApplication"
+                                                wire:loading.attr="disabled"
+                                            >
+                                                <span wire:loading.remove wire:target="submitLoanApplication">Save</span>
+                                                <span wire:loading wire:target="submitLoanApplication">Saving...</span>
+                                            </x-button>
+                                        </div>
+                                    </x-slot>
+                                </x-modal-card>
+                            @endif
+                        </div>
+                       
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
                             <x-card title="Active Loan" rounded="3xl">
                                 @if ($hasActiveLoan)
@@ -227,7 +299,7 @@
                                                             ₱{{ number_format(optional($ledger->payment)->amount ?? 0, 2) }}
                                                         </td>
                                                         <td class="px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">
-                                                            {{ $ledger->payment->payment_method }}
+                                                            {{ $ledger->payment?->payment_method ?? 'Unpaid' }}
                                                         </td>
                                                         <td class="px-2 lg:px-6 py-2 whitespace-nowrap text-end text-sm font-medium">
                                                             @if ($ledger->payment && $ledger->payment->receipt)
