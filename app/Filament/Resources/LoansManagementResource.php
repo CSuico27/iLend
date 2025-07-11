@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LoansManagementResource\Pages;
 use App\Filament\Resources\LoansManagementResource\RelationManagers\LedgersRelationManager;
+use App\Mail\LoanStatus;
 use App\Models\Ledger;
 use App\Models\Loan;
 use Carbon\Carbon;
@@ -29,6 +30,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Relationship;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 
 class LoansManagementResource extends Resource
 {
@@ -424,6 +426,9 @@ class LoansManagementResource extends Resource
                         ->action(function ($record) {
                         
                             $record->update(['status' => 'Approved']);
+                            Mail::to($record->user->email)->send(
+                                new LoanStatus($record, 'Approved')
+                            );
 
                             Notification::make()
                                 ->title('Loan approved')
