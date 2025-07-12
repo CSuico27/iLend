@@ -6,7 +6,7 @@ We are pleased to inform you that your loan application with LGTSMPC has been ap
 Here are the key details of your approved loan:
 
 **Loan Amount:** ₱{{ number_format($loan->loan_amount, 2) }} <br>
-**Loan Type:** {{ ucfirst($loan->loan_type) }} <br>
+**Loan Type:** {{ ucfirst($loan->loan_type) }} Loan <br>
 **Term:** {{ $loan->loan_term }} Months <br>
 **Interest Rate:** {{ $loan->interest_rate }} %
 
