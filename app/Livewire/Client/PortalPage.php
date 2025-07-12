@@ -106,11 +106,18 @@ class PortalPage extends Component
             return true;
         }
 
-        return $userLoans->every(fn($loan) => $loan->is_finished);
+        return $userLoans->every(fn($loan) => $loan->is_finished && $loan->status !== 'Pending');
     }
 
     public function openLoanApplicationModal()
     {
+        if (! $this->canApply) {
+            $this->notification()->error(
+                'Loan Application Blocked',
+                'You have a pending or active loan. Please settle it before applying again.'
+            );
+            return;
+        }
         $this->showLoanApplicationModal = true;
     }
 
