@@ -11,6 +11,8 @@ class Payment extends Model
         'ledger_id',
         'payment_method',
         'amount',
+        'proof_of_billing',
+        'status',
         'date_received',
         'receipt'
     ];
@@ -18,4 +20,10 @@ class Payment extends Model
     {
         return $this->belongsTo(Ledger::class);
     }
+
+    public function getUserAttribute()
+    {
+        return $this->ledger?->loan?->user;
+    }
+
 }

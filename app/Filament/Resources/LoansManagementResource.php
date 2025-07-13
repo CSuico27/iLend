@@ -434,7 +434,7 @@ class LoansManagementResource extends Resource
                                 ->title('Loan approved')
                                 ->success()
                                 ->send();
-                        }),
+                        })->visible(fn ($record) => $record->status === 'Pending'),
 
                     Tables\Actions\Action::make('reject')
                         ->label('Reject')
@@ -451,22 +451,23 @@ class LoansManagementResource extends Resource
                                 ->title('Loan rejected')
                                 ->danger()
                                 ->send();
-                        }),
+                        })->visible(fn ($record) => $record->status === 'Pending'),
 
                     // Tables\Actions\ViewAction::make()->modalWidth('2xl'),
-                    Tables\Actions\DeleteAction::make(),
-                ])->visible(fn ($record) => $record->status === 'Pending'),
-
-                Tables\Actions\EditAction::make()
+                    Tables\Actions\EditAction::make()
                     ->visible(fn ($record) => $record->status === 'Approved')
                     ->label('View Ledger')
-                    ->icon('heroicon-m-eye'),
-                ActionGroup::make([
-                    Tables\Actions\DeleteAction::make()
-                        ->modalHeading('Delete Loan')
-                        ->visible(fn ($record) => $record->status === 'Approved'),
-                ])
+                    ->icon('heroicon-m-eye')
+                    ->visible(fn ($record) => $record->status === 'Approved'),
 
+                    Tables\Actions\DeleteAction::make()
+                        ->modalHeading('Delete Loan'),
+                ])
+                // ActionGroup::make([
+                //     Tables\Actions\DeleteAction::make()
+                //         ->modalHeading('Delete Loan')
+                //         ->visible(fn ($record) => $record->status === 'Approved'),
+                // ])
             ])
 
             ->bulkActions([
