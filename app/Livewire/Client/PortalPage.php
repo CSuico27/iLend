@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Client;
 
+use App\Models\CreditScore;
 use App\Models\Loan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -35,14 +36,26 @@ class PortalPage extends Component
     public $total_payment;
     public $payment_per_term;
 
+    public $creditScore, $creditTier, $creditRemarks, $creditLastUpdated;
+
     protected $queryString = ['activeTab'];
 
     public function setActiveTab($tab)
     {
         $this->activeTab = $tab;
+        session(['activeTab' => $tab]);
+    }
+
+    public function activateCreditScoreTab()
+    {
+        $this->activeTab = 'cs';
+        session(['activeTab' => 'cs']);
+        $this->dispatch('reload');
     }
 
     public function mount(){
+
+        $this->activeTab = session('activeTab', 'dashboard');
         if (Auth::check()) {
             
             $user = Auth::user();
@@ -53,6 +66,13 @@ class PortalPage extends Component
             if ($userProfile && $userProfile->status == 'Pending') {
                 return redirect()->route('user.home')->with('portal_error', 'Your membership application is currently under review. Please wait for approval.');
             }
+
+            // Get user's credit score
+            $creditScore = CreditScore::where('user_id', $user->id)->first();
+            $this->creditScore = $creditScore?->score ?? 0;
+            $this->creditTier = $creditScore?->tier ?? 'N/A';
+            $this->creditRemarks = $creditScore?->remarks ?? 'No data';
+            $this->creditLastUpdated = $creditScore?->updated_at?->format('M d, Y') ?? 'Never';
 
             $this->userLoans = $user->loans()->with(['ledgers.payment'])->get();
 
