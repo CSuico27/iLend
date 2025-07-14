@@ -187,6 +187,9 @@ class LoansManagementResource extends Resource
                                     ->where('status', 'Approved')
                                     ->where('approved_at', '<=', Carbon::now()->subYear())
                                 ) 
+                                ->whereDoesntHave('loans', fn ($q) => $q
+                                    ->where('is_finished', 0)
+                                )
                         )
                         ->required(),
 
