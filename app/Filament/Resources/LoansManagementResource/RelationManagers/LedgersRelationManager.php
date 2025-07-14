@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Title;
 
 class LedgersRelationManager extends RelationManager
 {
@@ -177,8 +178,7 @@ class LedgersRelationManager extends RelationManager
                         FileUpload::make('proof_of_billing')
                             ->label('Upload Proof of Billing')
                             ->directory('proof-of-billing')
-                            ->openable()
-                            ->required(),
+                            ->openable(),
                         Select::make('status')
                             ->label('Status')
                             ->options([
@@ -186,19 +186,19 @@ class LedgersRelationManager extends RelationManager
                                 'Approved' => 'Approved',
                                 'Rejected' => 'Rejected',
                             ])
-                            ->default('Pending')
+                            ->default('Approved')
                             ->required(),
                         DatePicker::make('date_received')
                             ->default(now())
                             ->required(),
                     ])
                     ->action(function (array $data, $record) {
-                        $record->payment()->create([
+                        $payment = $record->payment()->create([
                             'amount' => $data['amount'],
                             'payment_method' => $data['payment_method'],
                             'proof_of_billing' => $data['proof_of_billing'],
                             'date_received' => $data['date_received'],
-                            'status' => 'Pending',
+                            'status' => $data['status'],
                         ]);
 
                         // $pdf = Pdf::loadView('pdf.receipt', [
@@ -219,9 +219,49 @@ class LedgersRelationManager extends RelationManager
                         // $record->update(['status' => 'Paid']);
 
                         // $this->updateLoanFinishedStatus($record->loan);
+                        if ($data['status'] === 'Approved') {
+                            $pdf = Pdf::loadView('pdf.receipt', [
+                                'ledger' => $record,
+                                'loan' => $record->loan,
+                                'user' => $record->loan->user,
+                            ]);
+
+                            $userName = str_replace(' ', '_', strtolower($record->loan->user->name));
+                            $paymentDate = Carbon::parse($data['date_received'])->format('Ymd');
+                            $receiptFileName = "{$payment->id}_receipt_{$userName}_{$paymentDate}.pdf";
+                            $receiptPath = 'receipts/' . $receiptFileName;
+
+                            Storage::disk('public')->put($receiptPath, $pdf->output());
+
+                            $payment->update([
+                                'receipt' => $receiptPath,
+                            ]);
+
+                            $record->update(['status' => 'Paid']);
+                            $this->updateLoanFinishedStatus($record->loan);
+
+                            Mail::to($record->loan->user->email)->send(
+                                new PaymentStatus($payment, 'Approved')
+                            );
+
+                            Notification::make()
+                                ->title('Payment Approved')
+                                ->success()
+                                ->send();
+                        }
+
+                        if($data['status'] === 'Rejected'){
+                            Mail::to($record->loan->user->email)->send(
+                                new PaymentStatus($payment, 'Rejected')
+                            );
+                            Notification::make()
+                                ->title('Payment Rejected')
+                                ->danger()
+                                ->send();
+                        }
 
                         Notification::make()
-                            ->title('Payment Submitted for Approval')
+                            ->title('Payment has been submitted.')
                             ->success()
                             ->send();
                     })->visible(function ($record) {
@@ -326,13 +366,18 @@ class LedgersRelationManager extends RelationManager
                             ->visible(fn ($record) => optional($record->payment)->status === 'Pending' && $record->status === 'Pending')
                             ->requiresConfirmation()
                             ->action(function ($record) {
-                                $record->payment->update([
+                                $payment = $record->payment;
+                                $payment->update([
                                     'payment_method' => 'Cash',
                                     'receipt' => null,
                                     'status' => 'Rejected',
                                     'proof_of_billing' => null,
                                 ]);
                                 $record->update(['status' => 'Pending']);
+
+                                Mail::to($record->loan->user->email)->send(
+                                    new PaymentStatus($payment, 'Rejected')
+                                );
 
                                 Notification::make()
                                     ->title('Payment Rejected')
@@ -359,16 +404,21 @@ class LedgersRelationManager extends RelationManager
                                 ->danger()
                                 ->send();
                         })
+                        ->visible(fn ($record) =>
+                            optional($record->payment)->status === 'Approved' &&
+                            optional($record->payment)->receipt &&
+                            $record->status === 'Paid'
+                        )
                         ->openUrlInNewTab(),
                     ])
                    
-                    ->visible(function ($record) {
-                        $approveVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
-                        $rejectVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
-                        $downloadVisible = optional($record->payment)->status === 'Approved' && optional($record->payment)->receipt && $record->status === 'Paid';
+                    // ->visible(function ($record) {
+                    //     $approveVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
+                    //     $rejectVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
+                    //     $downloadVisible = optional($record->payment)->status === 'Approved' && optional($record->payment)->receipt && $record->status === 'Paid';
 
-                        return $approveVisible || $rejectVisible || $downloadVisible;
-                    })
+                    //     return $approveVisible || $rejectVisible || $downloadVisible;
+                    // })
                     // Action::make('downloadReceipt')
                     //     ->label('Receipt')
                     //     ->icon('heroicon-o-arrow-down-tray')
