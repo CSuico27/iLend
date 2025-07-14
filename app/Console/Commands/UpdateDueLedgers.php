@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\CreditScore;
 use App\Models\Ledger;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
@@ -22,7 +24,7 @@ class UpdateDueLedgers extends Command
      *
      * @var string
      */
-    protected $description = 'Mark past-due ledgers as Due';
+    protected $description = 'Mark past-due ledgers as Due and recalculate credit scores.';
 
     /**
      * Execute the console command.
@@ -31,11 +33,93 @@ class UpdateDueLedgers extends Command
     {
         $today = Carbon::today();
 
-        $updated = Ledger::where('status', 'Pending')
+        $ledgers = Ledger::where('status', 'Pending')
             ->whereDate('due_date', '<', $today)
-            ->update(['status' => 'Due']);
+            ->get();
 
-        $this->info("Updated $updated ledger(s) to Due.");
-        Log::info("UpdateDueLedgers: Updated $updated ledger(s) to Due at " . now());
+        $updatedCount = 0;
+        
+        foreach ($ledgers as $ledger) {
+            $ledger->update([
+                'status' => 'Due',
+                'is_due' => 1,
+            ]);
+            $updatedCount++;
+        }
+
+        $this->info("Updated $updatedCount ledger(s) to Due and is_due = 1.");
+        Log::info("UpdateDueLedgers: Updated $updatedCount ledger(s) to Due and is_due = 1 at " . now());
+        
+
+        $this->recalculateCreditScores();
+
+        $this->info("Credit scores recalculated.");
     }
+
+    protected function recalculateCreditScores()
+    {
+        User::with(['loans.ledgers.payment'])   
+            ->where('role', '!=', 'admin')
+            ->chunk(100, function ($users) {
+                foreach ($users as $user) {
+                    $score = 50;
+                    $onTime = 0;
+                    $late = 0;
+                    $unpaid = 0;
+                    $completedLoans = 0;
+
+                    foreach ($user->loans as $loan) {
+                        $loanCompleted = true;
+
+                        foreach ($loan->ledgers as $ledger) {
+                            $dueDate = \Carbon\Carbon::parse($ledger->due_date);
+                            $payment = $ledger->payment;
+
+                            if ($ledger->status === 'Paid') {
+                                if ($payment && \Carbon\Carbon::parse($payment->date_received)->lte($dueDate)) {
+                                    $onTime++;
+                                    $score += 2;
+                                } else {
+                                    $late++;
+                                    $score += 1;
+                                }
+                            } elseif ($ledger->status === 'Due') {
+                                $unpaid++;
+                                $score -= 3;
+                                $loanCompleted = false;
+                            }
+                            Log::info("User #{$user->id} Ledger #{$ledger->id}: Payment Received = {$payment?->date_received}, Due = {$dueDate}");
+                        }
+
+                        if ($loan->is_finished) {
+                            $completedLoans++;
+                            $score += 5;
+                        } elseif (!$loanCompleted && \Carbon\Carbon::parse($loan->end_date)->lt(now())) {
+                            $score -= 5;
+                        }
+                    }
+
+                    $score = max(0, min(100, $score));
+
+                    $tier = match (true) {
+                        $score >= 81 => 'Excellent',
+                        $score >= 61 => 'Good',
+                        $score >= 41 => 'Fair',
+                        default => 'Poor',
+                    };
+
+                    CreditScore::updateOrCreate(
+                        ['user_id' => $user->id],
+                        [
+                            'score' => $score,
+                            'tier' => $tier,
+                            'remarks' => "Auto: +{$onTime} on-time, -{$late} late, -{$unpaid} unpaid, {$completedLoans} completed"
+                        ]
+                    );
+                    
+                }
+                
+            });
+    }
+
 }

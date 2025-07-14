@@ -24,7 +24,7 @@
                         </svg>                          
                         Dues
                     </button>
-                    <button wire:click="setActiveTab('cs')" type="button" class="{{ $activeTab === 'cs' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
+                    <button wire:click="activateCreditScoreTab" type="button" class="{{ $activeTab === 'cs' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
                         </svg>                          
@@ -252,11 +252,130 @@
                     </p>
                 {{-- </div> --}}
                 @elseif ($activeTab === 'cs')
-                {{-- <div id="tabs-with-icons-4" class="hidden" role="tabpanel" aria-labelledby="tabs-with-icons-item-4"> --}}
-                    <p class="text-gray-500 dark:text-neutral-400">
-                        This is the <em class="font-semibold text-gray-800 dark:text-neutral-200">Credit Score</em> item's tab body.
-                    </p>
-                {{-- </div> --}}
+                    <div class="w-full h-auto mt-5 flex flex-col-reverse pb-10 lg:pb-0 lg:flex-row justify-center gap-5">
+                        <div class="w-full lg:max-w-lg">
+                            <div class="relative overflow-x-auto">
+                                <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3">
+                                                Behavior
+                                            </th>
+                                            <th scope="col" class="px-6 py-3">
+                                                Effect on Score
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                <div class="flex items-center gap-3">
+                                                    <span>On-time payment</span> 
+                                                    <div class="hs-tooltip inline-block">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hs-tooltip-toggle w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                        </svg>                                                      
+                                                        <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded-md shadow-2xs dark:bg-neutral-700" role="tooltip">
+                                                            Paid on or before due date
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <td class="px-6 py-4">
+                                                +2 <span class="italic text-[10px] text-blue-700">points</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                <div class="flex items-center gap-3">
+                                                    <span>Late payment</span> 
+                                                    <div class="hs-tooltip inline-block">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hs-tooltip-toggle w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                        </svg>                                                      
+                                                        <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded-md shadow-2xs dark:bg-neutral-700" role="tooltip">
+                                                            Paid but after due date
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <td class="px-6 py-4">
+                                                +1 <span class="italic text-[10px] text-blue-700">points</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-white dark:bg-gray-800">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                <div class="flex items-center gap-3">
+                                                    <span>Fully finished loan</span> 
+                                                    <div class="hs-tooltip inline-block">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hs-tooltip-toggle w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                        </svg>                                                      
+                                                        <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded-md shadow-2xs dark:bg-neutral-700" role="tooltip">
+                                                            Finished the loan
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <td class="px-6 py-4">
+                                                +5 <span class="italic text-[10px] text-blue-700">points</span>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="bg-white dark:bg-gray-800">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                <div class="flex items-center gap-3">
+                                                    <span>Missed or unpaid due</span> 
+                                                    <div class="hs-tooltip inline-block">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hs-tooltip-toggle w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                        </svg>                                                      
+                                                        <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded-md shadow-2xs dark:bg-neutral-700" role="tooltip">
+                                                            Ledger is Due
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <td class="px-6 py-4">
+                                                −3 <span class="italic text-[10px] text-red-700">points</span>
+                                            </td>
+                                        </tr>
+                                        <tr class="bg-white dark:bg-gray-800">
+                                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                <div class="flex items-center gap-3">
+                                                    <span>Overdue loan still unfinished</span> 
+                                                    <div class="hs-tooltip inline-block">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 hs-tooltip-toggle w-5 h-5">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                                                        </svg>                                                      
+                                                        <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity inline-block absolute invisible z-10 py-1 px-2 bg-gray-900 text-xs font-medium text-white rounded-md shadow-2xs dark:bg-neutral-700" role="tooltip">
+                                                            loan not finished & past end date
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </th>
+                                            <td class="px-6 py-4">
+                                                −5 <span class="italic text-[10px] text-red-700">points</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {{-- <p class="text-gray-500 dark:text-neutral-400 text-center">
+                               {{ $creditRemarks }}
+                            </p> --}}
+                        </div>
+                        <div class="w-full lg:max-w-xs relative">
+                            <canvas id="creditScoreChart" class="z-10"></canvas>
+                            <p class="absolute inset-0 flex items-center justify-center text-3xl font-semibold pointer-events-none">
+                                {{ $creditScore ?? 0 }}%
+                            </p>
+                            <p class="text-center">
+                                <span class="text-xs">Last updated:</span> <span class="italic text-blue-800">{{ $creditLastUpdated }}</span>
+                            </p>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
@@ -327,12 +446,13 @@
                                     <div class="overflow-hidden">
                                         <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                                             <thead>
-                                                <tr>
-                                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Due Date</th>
-                                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Is Due</th>
-                                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Status</th>
-                                                    <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Amount Paid</th>
-                                                    <th scope="col" class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Downloadables</th>
+                                                <tr class="bg-gray-300">
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Due Date</th>
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Is Due</th>
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Status</th>
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Amount Paid</th>
+                                                    <th scope="col" class="pl-6 py-3 text-end text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Payment Method</th>
+                                                    <th scope="col" class="pl-6 py-3 text-end text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Downloadables</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
@@ -387,5 +507,63 @@
             </x-slot>
         </x-card>
     </x-modal>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const score = @json($creditScore ?? 0);
+        const remaining = 100 - score;
+
+        let tierColor = '#f44336';
+        if (score >= 81) {
+            tierColor = '#4caf50';
+        } else if (score >= 61) {
+            tierColor = '#2196f3';
+        } else if (score >= 41) {
+            tierColor = '#ff9800';
+        }
+
+        const ctx = document.getElementById('creditScoreChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Credit Score', 'Remaining'],
+                datasets: [{
+                    data: [score, remaining],
+                    backgroundColor: [tierColor, '#e0e0e0'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+            cutout: '70%',
+            plugins: {
+                    title: {
+                        display: true,
+                        text: 'Your Credit Score',
+                        font: {
+                            size: 18
+                        }
+                    },
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return context.label + ': ' + context.parsed + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+
+    <script>
+        window.addEventListener('reload', event => {
+            window.location.reload();
+        })
+    </script>
+
 </div>
  
