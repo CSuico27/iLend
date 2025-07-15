@@ -41,7 +41,6 @@ class UpdateDueLedgers extends Command
         
         foreach ($ledgers as $ledger) {
             $ledger->update([
-                'status' => 'Due',
                 'is_due' => 1,
             ]);
             $updatedCount++;
@@ -72,29 +71,47 @@ class UpdateDueLedgers extends Command
                         $loanCompleted = true;
 
                         foreach ($loan->ledgers as $ledger) {
-                            $dueDate = \Carbon\Carbon::parse($ledger->due_date);
+                            $dueDate = Carbon::parse($ledger->due_date);
                             $payment = $ledger->payment;
 
                             if ($ledger->status === 'Paid') {
-                                if ($payment && \Carbon\Carbon::parse($payment->date_received)->lte($dueDate)) {
-                                    $onTime++;
-                                    $score += 2;
+                                if (
+                                    $payment &&
+                                    $payment->status === 'Approved'
+                                ) {
+                                    $receivedDate = Carbon::parse($payment->date_received);
+                                    if ($receivedDate->lte($dueDate)) {
+                                        $onTime++;
+                                        $score += 2;
+                                        Log::info("On-time approved payment → User #{$user->id}, Ledger #{$ledger->id}");
+                                    } else {
+                                        $late++;
+                                        $score += 1;
+                                        Log::info("Late approved payment → User #{$user->id}, Ledger #{$ledger->id}");
+                                    }
                                 } else {
-                                    $late++;
-                                    $score += 1;
+                                    Log::info("Ignored unapproved payment → User #{$user->id}, Ledger #{$ledger->id}, Payment Status: {$payment?->status}");
                                 }
-                            } elseif ($ledger->status === 'Due') {
-                                $unpaid++;
-                                $score -= 3;
-                                $loanCompleted = false;
+                            } elseif ($ledger->status === 'Pending') {
+                                if ($dueDate->lt(now())) {
+                                    // Unpaid & overdue
+                                    $unpaid++;
+                                    $score -= 3;
+                                    $loanCompleted = false;
+                                    Log::info("Unpaid overdue ledger → User #{$user->id}, Ledger #{$ledger->id}, Due: {$dueDate}");
+                                } else {
+                                    // Still before due date
+                                    Log::info("Upcoming payment → User #{$user->id}, Ledger #{$ledger->id}, Due: {$dueDate}");
+                                }
                             }
-                            Log::info("User #{$user->id} Ledger #{$ledger->id}: Payment Received = {$payment?->date_received}, Due = {$dueDate}");
+
+                            Log::info("User #{$user->id} Ledger #{$ledger->id}: Payment Received = {$payment?->date_received}, Status = {$payment?->status}, Due = {$dueDate}");
                         }
 
                         if ($loan->is_finished) {
                             $completedLoans++;
                             $score += 5;
-                        } elseif (!$loanCompleted && \Carbon\Carbon::parse($loan->end_date)->lt(now())) {
+                        } elseif (!$loanCompleted && Carbon::parse($loan->end_date)->lt(now())) {
                             $score -= 5;
                         }
                     }
@@ -113,13 +130,14 @@ class UpdateDueLedgers extends Command
                         [
                             'score' => $score,
                             'tier' => $tier,
-                            'remarks' => "Auto: +{$onTime} on-time, -{$late} late, -{$unpaid} unpaid, {$completedLoans} completed"
+                            'remarks' => "Auto: +{$onTime} on-time, +{$late} late, -{$unpaid} unpaid, {$completedLoans} completed"
                         ]
                     );
-                    
+
+                    Log::info("User #{$user->id} Final Score: {$score} | On-time: {$onTime}, Late: {$late}, Unpaid: {$unpaid}, Completed Loans: {$completedLoans}");
                 }
-                
             });
     }
+
 
 }
