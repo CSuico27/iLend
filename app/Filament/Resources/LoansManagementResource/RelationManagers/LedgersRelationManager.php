@@ -105,6 +105,11 @@ class LedgersRelationManager extends RelationManager
                 TextColumn::make('loan.loan_term')
                     ->label('Loan Term')
                     ->suffix(' months'),
+                TextColumn::make('is_due')
+                    ->label('Is Due')
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Yes' : 'No')
+                    ->badge()
+                    ->color(fn (bool $state): string => $state ? 'danger' : 'success'),
                 TextColumn::make('status')
                     ->label('Payment Status')
                     ->formatStateUsing(fn (string $state): string => ucfirst($state))
@@ -368,7 +373,7 @@ class LedgersRelationManager extends RelationManager
                             ->action(function ($record) {
                                 $payment = $record->payment;
                                 $payment->update([
-                                    'payment_method' => 'Cash',
+                                    // 'payment_method' => 'Cash',
                                     'receipt' => null,
                                     'status' => 'Rejected',
                                     'proof_of_billing' => null,

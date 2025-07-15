@@ -451,8 +451,9 @@
                                                     <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Is Due</th>
                                                     <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Status</th>
                                                     <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Amount Paid</th>
-                                                    <th scope="col" class="pl-6 py-3 text-end text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Payment Method</th>
-                                                    <th scope="col" class="pl-6 py-3 text-end text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Downloadables</th>
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Payment Status</th>
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Downloadables</th>
+                                                    <th scope="col" class="pl-6 py-3 text-start text-[10px] font-bold text-gray-500 uppercase dark:text-neutral-500">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
@@ -484,7 +485,66 @@
                                                             @else
                                                                 <span class="text-xs text-gray-400 italic">No receipt</span>
                                                             @endif
-                                                        </td>                                                        
+                                                        </td>
+                                                        <td class="px-2 lg:px-6 py-2 whitespace-nowrap text-center text-sm font-medium mx-auto">
+                                                            @if ($ledger->status === 'Pending' && optional($ledger->payment)->status === 'Pending') 
+                                                                <x-badge sm icon="clock" warning label="Pending" />
+                                                            @elseif ($ledger->status === 'Paid' && optional($ledger->payment)->status === 'Approved') 
+                                                                <x-badge sm icon="check-circle" positive label="Paid" />
+                                                            @else 
+                                                                <x-button label="Pay" wire:click="openPaymentModal({{ $ledger->id }})" positive />
+
+                                                                <x-modal-card title="Payment" wire:model="showPaymentModal">
+                                                                    <form 
+                                                                        id="paymentForm"
+                                                                        wire:submit.prevent="save({{ $ledger->id }})"
+                                                                    >
+                                                                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                                            <x-select 
+                                                                                label="Payment Method" 
+                                                                                wire:model="payment_method" 
+                                                                                placeholder="Select Payment Method"
+                                                                                :error="$errors->first('payment_method')"
+                                                                            >
+                                                                                <x-select.option label="GCash" value="GCash" />
+                                                                                <x-select.option label="Bank Transfer" value="Bank Transfer" />
+                                                                            </x-select>
+                                                                            <x-input 
+                                                                                label="Amount" 
+                                                                                wire:model="amount" 
+                                                                                readonly 
+                                                                                :error="$errors->first('amount')"
+                                                                            />
+                                                                            <div class="sm:col-span-2">
+                                                                                <p class="text-start font-semibold">Upload Proof of Billing</p>
+                                                                                <x-filepond::upload wire:model="proof_of_billing" />
+                                                                                @error('proof_of_billing') 
+                                                                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p> 
+                                                                                @enderror
+                                                                            </div>
+                                                                        </div>
+                                                                        <x-slot name="footer">
+                                                                            <div class="flex justify-between gap-x-4 w-full">
+                                                                                <div class="flex gap-x-4 ml-auto">
+                                                                                    <x-button flat label="Cancel" x-on:click="close" />
+                                                                                    <x-button
+                                                                                        primary
+                                                                                        label="Submit"
+                                                                                        type="submit" 
+                                                                                        form="paymentForm" 
+                                                                                        wire:target="save{{ $ledger->id }}"
+                                                                                        wire:loading.attr="disabled"
+                                                                                    >
+                                                                                        <span wire:loading.remove wire:target="save{{ $ledger->id }}">Save</span>
+                                                                                        <span wire:loading wire:target="save{{ $ledger->id }}">Saving...</span>
+                                                                                    </x-button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </x-slot>
+                                                                    </form>
+                                                                </x-modal-card>
+                                                        @endif
+                                                    </td>                            
                                                     </tr>
                                                 @endforeach
                                             </tbody>

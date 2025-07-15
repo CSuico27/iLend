@@ -3,15 +3,20 @@
 namespace App\Livewire\Client;
 
 use App\Models\CreditScore;
+use App\Models\Ledger;
 use App\Models\Loan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Spatie\LivewireFilepond\WithFilePond;
 use WireUi\Traits\WireUiActions;
 
 class PortalPage extends Component
 {
     use WireUiActions;
+    use WithFilePond;
     public $activeTab = 'dashboard';
 
     public $activeLoanDetails;
@@ -37,6 +42,10 @@ class PortalPage extends Component
     public $payment_per_term;
 
     public $creditScore, $creditTier, $creditRemarks, $creditLastUpdated;
+    public $payment_method;
+    public $amount;
+    public $proof_of_billing;
+    public bool $showPaymentModal = false;
 
     protected $queryString = ['activeTab'];
 
@@ -75,6 +84,7 @@ class PortalPage extends Component
             $this->creditLastUpdated = $creditScore?->updated_at?->format('M d, Y') ?? 'Never';
 
             $this->userLoans = $user->loans()->with(['ledgers.payment'])->get();
+            $this->amount = $user->loans()->first()?->payment_per_term ?? 0;
 
             $this->activeLoanDetails = $user->loans()
                 ->with(['ledgers.payment'])
@@ -238,6 +248,64 @@ class PortalPage extends Component
             );
             return;
         }
+    }
+
+    public function openPaymentModal($ledgerId)
+    {
+        $ledger = Ledger::with('loan.ledgers')->findOrFail($ledgerId);
+
+        if ($ledger->status === 'Paid' || optional($ledger->payment)?->status === 'Pending') {
+            $this->notification()->error(
+                'Payment Error',
+                'This ledger has already been paid or is pending approval.'
+            );
+            return;
+        }
+
+        $hasUnpaidEarlierLedger = $ledger->loan
+            ->ledgers()
+            ->where('due_date', '<', $ledger->due_date)
+            ->where('status', '!=', 'Paid')
+            ->exists();
+
+        if ($hasUnpaidEarlierLedger) {
+            $this->notification()->error(
+                'Payment Error',
+                'You must pay earlier dues before this one.'
+            );
+            return;
+        }
+
+        $this->showPaymentModal = true;
+    }
+    public function save($ledgerId)
+    {
+        $ledger = Ledger::findOrFail($ledgerId);
+        // Validate inputs
+        $this->validate([
+            'payment_method' => 'required|in:GCash,Bank Transfer',
+            'amount' => 'required|numeric|min:1',
+            'proof_of_billing' => 'required|file|image|max:2048',
+        ]);
+
+        // Store uploaded file
+        $filePath = $this->proof_of_billing->store('proof-of-billing', 'public');
+
+        // Create the payment
+        $ledger->payment()->create([
+            'payment_method' => $this->payment_method,
+            'amount' => $this->amount,
+            'proof_of_billing' => $filePath,
+            'status' => 'Pending',
+            'date_received' => now(),
+        ]);
+        
+        $this->showPaymentModal = false;
+        
+        $this->notification()->success(
+            'Payment Submitted',
+            'Your payment has been submitted for admin review.'
+        );
     }
 
     public function render()
