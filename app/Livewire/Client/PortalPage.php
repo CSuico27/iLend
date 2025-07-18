@@ -5,6 +5,7 @@ namespace App\Livewire\Client;
 use App\Models\CreditScore;
 use App\Models\Ledger;
 use App\Models\Loan;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -47,6 +48,8 @@ class PortalPage extends Component
     public $proof_of_billing;
     public bool $showPaymentModal = false;
 
+    public $userInfo;
+
     protected $queryString = ['activeTab'];
 
     public function setActiveTab($tab)
@@ -71,6 +74,7 @@ class PortalPage extends Component
             $userProfile = Auth::user()->info;
             $this->user_id = Auth::user()->id;
             $this->user_name = Auth::user()->name;
+            $this->userInfo = User::with('info')->find(Auth::id());
 
             if ($userProfile && $userProfile->status == 'Pending') {
                 return redirect()->route('user.home')->with('portal_error', 'Your membership application is currently under review. Please wait for approval.');

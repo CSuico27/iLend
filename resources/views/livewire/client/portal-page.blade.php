@@ -18,24 +18,24 @@
                           
                     Loans
                     </button>
-                    <button wire:click="setActiveTab('dues')" type="button" class="{{ $activeTab === 'dues' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                        </svg>                          
-                        Dues
-                    </button>
                     <button wire:click="activateCreditScoreTab" type="button" class="{{ $activeTab === 'cs' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
                         </svg>                          
                         Credit Score
                     </button>
+                    <button wire:click="setActiveTab('profile')" type="button" class="{{ $activeTab === 'profile' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>                                                    
+                        Profile
+                    </button>
                 </nav>
             </div>
             
             <div class="mt-3">
                 @if ($activeTab === 'dashboard')
-                    <div class="w-full h-auto mt-5 space-y-4">
+                    <div class="w-full h-auto mt-5 pb-5 space-y-4">
                         <div class="flex justify-end">
                             {{-- @if ($this->canApply) --}}
                                <x-button
@@ -245,12 +245,7 @@
                         @endif
                     </div>
                     </div>
-                @elseif ($activeTab === 'dues')
-                {{-- <div id="tabs-with-icons-3" class="hidden" role="tabpanel" aria-labelledby="tabs-with-icons-item-3"> --}}
-                    <p class="text-gray-500 dark:text-neutral-400">
-                        This is the <em class="font-semibold text-gray-800 dark:text-neutral-200">third</em> item's tab body.
-                    </p>
-                {{-- </div> --}}
+               
                 @elseif ($activeTab === 'cs')
                     <div class="w-full h-auto mt-5 flex flex-col-reverse pb-10 lg:pb-0 lg:flex-row justify-center gap-5">
                         <div class="w-full lg:max-w-lg">
@@ -374,6 +369,41 @@
                             <p class="text-center">
                                 <span class="text-xs">Last updated:</span> <span class="italic text-blue-800">{{ $creditLastUpdated }}</span>
                             </p>
+                        </div>
+                    </div>
+                @elseif ($activeTab === 'profile')
+                    <div class="w-full h-auto mt-5 flex flex-col justify-center items-center">
+                        <div class="w-full max-w-xl h-auto flex flex-col justify-center items-center">
+                            <div class="w-[100px] h-[100px]">
+                                @if ($userInfo->info->status === 'Approved' && $userInfo->info->picture)
+                                    <img src="{{ asset('storage/' . $userInfo->info->picture) }}" alt="{{ $userInfo->name }}" class="w-full h-auto rounded-full">
+                                @else
+                                    <img src="{{ asset('storage/' . $userInfo->avatar) }}" alt="{{ $userInfo->name }}" class="w-full h-auto">
+                                @endif
+                            </div>
+                            <div class="mt-5">
+                                <h1 class="text-xl font-semibold text-center">{{ $userInfo->name }}</h1>
+                                <p class="text-center text-blue-500 text-sm">
+                                    <span class="text-xs italic text-gray-500">Member since:</span>
+                                    {{ \Carbon\Carbon::parse($userInfo->info->approved_at)->format('F j, Y') }}
+                                </p>
+                                
+                            </div>
+                            <div class="mt-5 w-full h-auto flex flex-col">
+                                <hr class="border-blue-500">
+                                <div class="w-full h-auto flex flex-col md:flex-row mt-2 justify-between">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Member ID: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->member_id }}</span></p>
+                                        <p class="text-sm text-gray-500">TIN No.: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->tin_number }}</span></p>
+                                        <p class="text-sm text-gray-500">Email: <span class="font-semibold text-lg text-black"> {{ $userInfo->email }}</span></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm text-gray-500">Phone: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->phone }}</span></p>
+                                        <p class="text-sm text-gray-500">Birthday: <span class="font-semibold text-lg text-black"> {{ \Carbon\Carbon::parse($userInfo->info->birthdate)->format('F j, Y') }}</span></p>
+                                        <p class="text-sm text-gray-500">Address: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->address }}</span></p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @endif
