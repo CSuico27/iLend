@@ -22,8 +22,7 @@ class RegisterPage extends Component
 
     public $password;
     public $confirmPassword;
-
-
+    public bool $agreedToTerms = false;
     public function register()
     {
         $this->validate([
@@ -31,6 +30,7 @@ class RegisterPage extends Component
             'email' => 'email|unique:users,email|max:255',
             'password' => 'required|min:8|max:255',
             'confirmPassword' => 'required|same:password|min:8|max:255',
+            'agreedToTerms' => 'accepted',
         ]);
 
         try {

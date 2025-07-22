@@ -22,12 +22,31 @@
                 <x-password label="Password" placeholder="Enter Password" wire:model="password" />
                 <x-password label="Confirm Password" placeholder="Confirm Password" wire:model="confirmPassword" />
             </div>
-            <div class="w-full flex flex-col justify-center mt-10 mt-6 px-4">
+            <div class="flex justify-center gap-2 mt-6">
+                <input
+                    id="terms"
+                    type="checkbox"
+                    wire:model.live="agreedToTerms"
+                    class=" w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500"
+                />
+                <label for="terms" class="text-sm text-gray-600 ">
+                    I agree to the
+                    <a href="{{ route('terms') }}" target="_blank" class="text-[#fe0002] underline hover:text-[#c70000]">
+                        Terms and Conditions
+                    </a>
+                </label>
+            </div>
+            @error('agreedToTerms')
+                <span class="text-sm text-red-600">{{ $message }}</span>
+            @enderror
+            <div class="w-full flex flex-col justify-center mt-10 px-4">
                 <button 
                     type="submit" 
-                    class="w-full max-w-md text-center font-semibold bg-[#fe0002] text-[#ffc71c] px-8 py-3 rounded-full text-xl hover:cursor-pointer"
+                    class="w-full max-w-md text-center font-semibold px-8 py-3 rounded-full text-xl transition duration-300
+                    {{ $agreedToTerms ? 'bg-[#fe0002] text-[#ffc71c] hover:cursor-pointer' : 'bg-gray-400 text-gray-200 cursor-not-allowed' }}"
                     wire:loading.attr="disabled"
                     wire:target="register"
+                    {{ !$agreedToTerms ? 'disabled' : '' }}
                 >
                     <span wire:loading.remove wire:target="register">Sign up</span>
                     <span wire:loading wire:target="register" class="flex items-center justify-center gap-2">
