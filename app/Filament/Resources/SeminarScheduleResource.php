@@ -136,8 +136,11 @@ class SeminarScheduleResource extends Resource
                     ->getStateUsing(function ($record) {
                         if (!$record->user_ids) return [];
                         return User::whereIn('id', $record->user_ids)
-                            ->pluck('avatar') 
-                            ->filter() 
+                            ->with('info') 
+                            ->get()
+                            ->map(function ($user) {
+                                return $user->info?->picture;
+                            })
                             ->take(5) 
                             ->toArray();
                     })

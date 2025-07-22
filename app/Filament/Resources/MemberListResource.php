@@ -175,8 +175,23 @@ class MemberListResource extends Resource
                                             'loans' => $record->loans()->orderBy('created_at', 'desc')->get(),
                                         ]),
                             ]),
+                            // Tab::make('Credit Score')->schema([
+                            //     View::make('filament.widgets.credit-score-chart')
+                            //         ->viewData(fn ($record) => [
+                            //             'creditScore' => $record->creditScore?->score ?? 0,
+                            //         ]),
+                            // ]),
+
                             ]),
                         ]),
+                    Tables\Actions\ViewAction::make('viewCreditScore')
+                        ->label('View Credit Score')
+                        ->icon('heroicon-o-chart-pie')
+                        ->modalHeading('Credit Score')
+                        ->modalWidth('2xl')
+                        ->modalContent(fn ($record) => view('filament.custom.credit-score-chart', [
+                            'creditScore' => $record->creditScore?->score ?? 0,
+                        ])),
                     Tables\Actions\DeleteAction::make(),
                 ]),
             ])
