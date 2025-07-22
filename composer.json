@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.10.1",
         "laravolt/avatar": "^6.2",
         "livewire/livewire": "^3.6",
+        "omnia-digital/livewire-calendar": "^3.2",
         "spatie/livewire-filepond": "^1.5",
         "wireui/wireui": "^2.4"
     },
