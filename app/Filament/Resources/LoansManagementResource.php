@@ -37,7 +37,7 @@ class LoansManagementResource extends Resource
     protected static ?string $model = Loan::class;
     protected static ?string $modelLabel = 'Application';
     protected static ?string $pluralModelLabel = 'Loans'; 
-    protected static ?string $navigationLabel = 'Loans';
+    protected static ?string $navigationLabel = 'Loans Management';
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
     // protected static ?string $navigationGroup = 'Loans Management';
     protected static ?int $navigationSort = 3;
