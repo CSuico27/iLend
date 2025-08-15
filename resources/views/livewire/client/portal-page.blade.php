@@ -1,172 +1,153 @@
-<div class="w-full h-auto flex justify-center items-center overflow-hidden">
-    <div class="flex flex-col justify-center items-center w-full max-w-[95%] lg:max-w-[80%] h-auto">
-        <h1 class="mt-5 font-semibold text-xl">Welcome to iLend</h1>
-        <div class="w-full h-auto mx-auto">
-            <div class="border-b border-gray-200 dark:border-neutral-700">
-                <nav class="flex justify-center gap-x-4" aria-label="Tabs" role="tablist" aria-orientation="horizontal">
-                    <button wire:click="setActiveTab('dashboard')" type="button" class="{{ $activeTab === 'dashboard' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-1" aria-selected="true" data-hs-tab="#tabs-with-icons-1" aria-controls="tabs-with-icons-1" role="tab">
-                        <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="w-full h-auto flex overflow-hidden">
+    <div class="flex flex-col justify-start w-64 h-screen border-r border-gray-200 dark:border-neutral-700 p-4">
+        <div class="w-full h-auto">
+            <nav class="flex flex-col gap-y-4" aria-label="Tabs" role="tablist" aria-orientation="vertical">
+                <button wire:click="setActiveTab('dashboard')" type="button" class="{{ $activeTab === 'dashboard' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-1" aria-selected="true" data-hs-tab="#tabs-with-icons-1" aria-controls="tabs-with-icons-1" role="tab">
+                    <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
-                        </svg>
-                        Dashboard
-                    </button>
-                    <button wire:click="setActiveTab('loans')" type="button" class="{{ $activeTab === 'loans' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-2" aria-selected="false" data-hs-tab="#tabs-with-icons-2" aria-controls="tabs-with-icons-2" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
-                        </svg>
-                          
+                    </svg>
+                    Dashboard
+                </button>
+                <button wire:click="setActiveTab('loans')" type="button" class="{{ $activeTab === 'loans' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-2" aria-selected="false" data-hs-tab="#tabs-with-icons-2" aria-controls="tabs-with-icons-2" role="tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+                    </svg>
                     Loans
-                    </button>
-                    <button wire:click="activateCreditScoreTab" type="button" class="{{ $activeTab === 'cs' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
-                        </svg>                          
-                        Credit Score
-                    </button>
-                    <button wire:click="setActiveTab('profile')" type="button" class="{{ $activeTab === 'profile' ? 'hover:cursor-pointer border-[#ff3134] text-[#ff3134] font-semibold' : 'hover:cursor-pointer border-transparent text-gray-500' }} py-4 px-1 inline-flex items-center gap-x-2 border-b-2 text-sm" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>                                                    
-                        Profile
-                    </button>
-                </nav>
-            </div>
-            
-            <div class="mt-3">
-                @if ($activeTab === 'dashboard')
-                    <div class="w-full h-auto mt-5 pb-5 space-y-4">
-                        <div class="flex justify-end">
-                            {{-- @if ($this->canApply) --}}
-                               <x-button
-                                    label="Apply for Loan"
-                                    class="w-full lg:w-auto bg-red-600 hover:bg-red-400 focus:bg-red-400 focus:ring-red-400"
-                                    wire:click="openLoanApplicationModal"
-                                >
-                                </x-button>
-
-                                <x-modal-card title="Loan Application" wire:model="showLoanApplicationModal">
-                                    <form id="loanApplicationForm" wire:submit.prevent="submitLoanApplication" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div class="sm:col-span-2">
-                                            <x-input label="Pangalan ng Umutang" placeholder="Your full name" wire:model="user_name" readonly />
-                                        </div>
-                                        <x-select label="Uri ng Loan" wire:model.live="loan_type" placeholder="Uri ng Loan">
-                                            <x-select.option label="Regular Loan" value="regular" />
-                                            <x-select.option label="Emergency Loan" value="emergency" />
-                                            <x-select.option label="Car Loan" value="car" />
-                                        </x-select> 
-                                        <x-currency
-                                            label="Halagang Hiniram"
-                                            placeholder="Halagang Hiniram"
-                                            wire:model.live="loan_amount" 
-                                            prefix="₱"
-                                        />
-                                        {{-- <x-input label="Interest Rate" placeholder="Interest Rate" wire:model.live="interest_rate" />  --}}
-                                        <x-number 
-                                            label="Interest Rate" 
-                                            placeholder="0" 
-                                            wire:model.live="interest_rate"
-                                        />
-                                        <x-select label="Tagal ng Buwan" wire:model.live="loan_term" placeholder="Tagal ng Buwan">
-                                            <x-select.option label="3 Months" value="3" />
-                                            <x-select.option label="6 Months" value="6" />
-                                            <x-select.option label="9 Months" value="9" />
-                                            <x-select.option label="12 Months" value="12" />
-                                            <x-select.option label="24 Months" value="24" />
-                                        </x-select> 
-                                        {{-- <x-select
-                                            label="Payment Frequency"
-                                            placeholder="Select payment frequency"
-                                            wire:model.live="payment_frequency"
-                                            :options="[
-                                                'daily' => 'daily',
-                                                'weekly' => 'weekly',
-                                                'biweekly' => 'biweekly',
-                                                'monthly'=> 'monthly'
-                                            ]"
-                                        /> --}}
-                                        <x-radio id="daily" label="Araw-araw" wire:model.live="payment_frequency" value="daily" />
-                                        <x-radio id="weekly" label="Lingguhan" wire:model.live="payment_frequency" value="weekly" />
-                                        <x-radio id="biweekly" label="Ikalawang Linggo" wire:model.live="payment_frequency" value="biweekly" />
-                                        <x-radio id="monthly" label="Buwanan" wire:model.live="payment_frequency" value="monthly" />
-                                        <x-input label="Date ng Unang Bayad" placeholder="First Payment Date" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
-                                        <x-input label="Date ng Huling Bayad" placeholder="Last Payment Date" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
-                                        <x-input label="Kabuuang Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly />
-                                        <x-input label="Kabuuang Babayaran" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
-                                        <div class="sm:col-span-2 w-full">
-                                            <x-input label="Halagang Babayaran Kada Hulugan" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly/>
-                                        </div>
-                                    </form>
-                                    <x-slot name="footer" class="flex justify-between gap-x-4">
-                                        {{-- <x-button flat negative label="Delete" x-on:click="close" />  --}}
-
-                                        <div class="flex gap-x-4 ml-auto">
-                                            <x-button flat label="Cancel" x-on:click="close" />
-
-                                            <x-button
-                                                primary
-                                                label="Submit"
-                                                type="submit" 
-                                                form="loanApplicationForm" 
-                                                wire:target="submitLoanApplication"
-                                                wire:loading.attr="disabled"
-                                            >
-                                                <span wire:loading.remove wire:target="submitLoanApplication">Save</span>
-                                                <span wire:loading wire:target="submitLoanApplication">Saving...</span>
-                                            </x-button>
-                                        </div>
-                                    </x-slot>
-                                </x-modal-card>
-                            {{-- @endif --}}
-                        </div>
-                       
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                            <x-card title="Active Loan" rounded="3xl">
-                                @if ($hasActiveLoan)
-                                    <div>
-                                        @if ($activeLoanDetails)
-                                            <p>Loan Type: <span class="text-sm capitalize italic bg-green-600 text-white px-3 rounded-full">{{ $activeLoanDetails->loan_type }}</span></p>
-                                        @endif
-                                        @if ($activeLoanDetails)
-                                            <p class="mt-2">Loan Term: <span class="text-sm capitalize italic">{{ $activeLoanDetails->loan_term }}</span></p>
-                                        @endif
-
-                                        @if ($activeLoanDetails)
-                                            <p class="mt-2">Interest Rate: <span class="text-sm capitalize italic">{{ $activeLoanDetails->interest_rate }}%</span></p>
-                                        @endif
-
-                                        @if ($activeLoanDetails)
-                                            <p class="mt-2">Payment Per Term: <span class="text-sm capitalize italic">₱{{ number_format($activeLoanDetails->payment_per_term, 2) }}</span></p>
-                                        @endif
-                                        <hr class="border-red-500">
-                                        <p class="mt-5">Total Loan Amount: <span class="text-xl font-bold text-blue-600 my-5">₱{{ number_format($activeLoanAmount, 2) }}</span> </p>
-                                    </div>
-                                @else
-                                    <p class="text-gray-400 italic">No active loan found</p>
-                                @endif
-                            </x-card>
-                            <x-card title="Total Payment Paid" rounded="3xl">
-                                <div class="text-xl font-bold text-green-600">
-                                    ₱{{ number_format($totalPaid, 2) }}
+                </button>
+                <button wire:click="activateCreditScoreTab" type="button" class="{{ $activeTab === 'cs' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                    </svg>
+                    Credit Score
+                </button>
+                <button wire:click="setActiveTab('profile')" type="button" class="{{ $activeTab === 'profile' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                    Profile
+                </button>
+            </nav>
+        </div>
+    </div>
+    <div class="flex-grow w-full h-auto p-4">
+        <h1 class="font-semibold text-xl mb-10 flex justify-center items-center">Welcome to iLEND</h1>
+        <div class="mt-3">
+            @if ($activeTab === 'dashboard')
+                <div class="w-full h-auto pb-5 space-y-4">
+                    <div class="flex justify-end">
+                        <x-modal-card title="Loan Application" wire:model="showLoanApplicationModal">
+                            <form id="loanApplicationForm" wire:submit.prevent="submitLoanApplication" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="sm:col-span-2">
+                                    <x-input label="Pangalan ng Umutang" placeholder="Your full name" wire:model="user_name" readonly />
+                                    <x-select label="Uri ng Loan" wire:model.live="loan_type" placeholder="Uri ng Loan">
+                                        <x-select.option label="Regular Loan" value="regular" />
+                                        <x-select.option label="Emergency Loan" value="emergency" />
+                                        <x-select.option label="Car Loan" value="car" />
+                                    </x-select>
+                                    <x-currency
+                                        label="Halagang Hiniram"
+                                        placeholder="Halagang Hiniram"
+                                        wire:model.live="loan_amount"
+                                        prefix="₱"
+                                    />
+                                    {{-- <x-number
+                                        label="Interest Rate"
+                                        placeholder="0"
+                                        wire:model.live="interest_rate"
+                                        readonly
+                                    /> --}}
+                                    <x-select label="Tagal ng Buwan" wire:model.live="loan_term" placeholder="Tagal ng Buwan">
+                                        <x-select.option label="3 Months" value="3" />
+                                        <x-select.option label="6 Months" value="6" />
+                                        <x-select.option label="9 Months" value="9" />
+                                        <x-select.option label="12 Months" value="12" />
+                                        <x-select.option label="24 Months" value="24" />
+                                    </x-select>
                                 </div>
-                            </x-card>
-                            <x-card title="Total Remaining Balance" rounded="3xl">
-                                <div class="text-xl font-bold text-red-600">
-                                    ₱{{ number_format($remainingBalance, 2) }}
+                                
+                                <x-radio id="daily" label="Araw-araw" wire:model.live="payment_frequency" value="daily" />
+                                <x-radio id="weekly" label="Lingguhan" wire:model.live="payment_frequency" value="weekly" />
+                                <x-radio id="biweekly" label="Ikalawang Linggo" wire:model.live="payment_frequency" value="biweekly" />
+                                <x-radio id="monthly" label="Buwanan" wire:model.live="payment_frequency" value="monthly" />
+                                <x-input label="Date ng Unang Bayad" placeholder="Unang Bayad" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
+                                <x-input label="Date ng Huling Bayad" placeholder="Huling Bayad" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
+                                <x-input label="Kabuuang Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly />
+                                <x-input label="Kabuuang Babayaran" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
+                                <div class="sm:col-span-2 w-full">
+                                    <x-input label="Halagang Babayaran Kada Hulugan" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly/>
                                 </div>
-                            </x-card>
-                        </div>
-                        
+                            </form>
+                            <x-slot name="footer" class="flex justify-between gap-x-4">
+                                <div class="flex gap-x-4 ml-auto">
+                                    <x-button flat label="Cancel" x-on:click="close" />
+                                    <x-button
+                                        primary
+                                        label="Submit"
+                                        type="submit"
+                                        form="loanApplicationForm"
+                                        wire:target="submitLoanApplication"
+                                        wire:loading.attr="disabled"
+                                    >
+                                        <span wire:loading.remove wire:target="submitLoanApplication">Save</span>
+                                        <span wire:loading wire:target="submitLoanApplication">Saving...</span>
+                                    </x-button>
+                                </div>
+                            </x-slot>
+                        </x-modal-card>
                     </div>
-                @elseif ($activeTab === 'loans')
-                    <div class="w-full h-auto mt-5 overflow-x-scroll lg:overflow-visible">
-                        <div class="flex flex-col">
-                            @if ($userLoans->where('status', 'Approved')->where('is_finished', 0)->isNotEmpty())
-                                <div class="-m-1.5">
-                                    <div class="p-1.5 min-w-full inline-block align-middle">
-                                        <div class="">
-                                            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
-                                                <thead>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                        <x-card title="Active Loan" rounded="3xl">
+                            @if ($hasActiveLoan)
+                                <div>
+                                    @if ($activeLoanDetails)
+                                        <p>Loan Type: <span class="text-sm capitalize italic bg-green-600 text-white px-3 rounded-full">{{ $activeLoanDetails->loan_type }}</span></p>
+                                    @endif
+                                    @if ($activeLoanDetails)
+                                        <p class="mt-2">Loan Term: <span class="text-sm capitalize italic">{{ $activeLoanDetails->loan_term }}</span></p>
+                                    @endif
+                                    @if ($activeLoanDetails)
+                                        <p class="mt-2">Interest Rate: <span class="text-sm capitalize italic">{{ $activeLoanDetails->interest_rate }}%</span></p>
+                                    @endif
+                                    @if ($activeLoanDetails)
+                                        <p class="mt-2">Payment Per Term: <span class="text-sm capitalize italic">₱{{ number_format($activeLoanDetails->payment_per_term, 2) }}</span></p>
+                                    @endif
+                                    <hr class="border-red-500">
+                                    <p class="mt-5">Total Loan Amount: <span class="text-xl font-bold text-blue-600 my-5">₱{{ number_format($activeLoanAmount, 2) }}</span> </p>
+                                </div>
+                            @else
+                                <p class="text-gray-400 italic">No active loan found</p>
+                            @endif
+                        </x-card>
+                        <x-card title="Total Payment Paid" rounded="3xl">
+                            <div class="text-xl font-bold text-green-600">
+                                ₱{{ number_format($totalPaid, 2) }}
+                            </div>
+                        </x-card>
+                        <x-card title="Total Remaining Balance" rounded="3xl">
+                            <div class="text-xl font-bold text-red-600">
+                                ₱{{ number_format($remainingBalance, 2) }}
+                            </div>
+                        </x-card>
+                    </div>
+                    <div class="flex justify-end mt-4">
+                        <x-button
+                            label="Apply for Loan"
+                            class="bg-red-600 hover:bg-red-400 focus:bg-red-400 focus:ring-red-400"
+                            wire:click="openLoanApplicationModal"
+                        />
+                    </div>
+                </div>
+            @elseif ($activeTab === 'loans')
+                <div class="w-full h-auto mt-5 overflow-x-scroll lg:overflow-visible">
+                    <div class="flex flex-col">
+                        @if ($userLoans->where('status', 'Approved')->where('is_finished', 0)->isNotEmpty())
+                            <div class="-m-1.5">
+                                <div class="p-1.5 min-w-full inline-block align-middle">
+                                    <div class="">
+                                        <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                            <thead>
                                                 <tr>
                                                     <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Loan ID</th>
                                                     <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Loan Type</th>
@@ -175,35 +156,34 @@
                                                     <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Loan Term</th>
                                                     <th scope="col" class="px-6 py-3 text-end text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Actions</th>
                                                 </tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-                                                    @foreach ($userLoans->where('status', 'Approved')->where('is_finished', 0) as $loan)
-                                                        <tr>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">{{ $loan->id }}</td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full">{{ $loan->loan_type }} Loan</span></td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">₱{{ number_format($loan->loan_amount, 2) }}</td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{ $loan->interest_rate }}%</td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{ $loan->loan_term }}</td>
-                                                            <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
-                                                                <x-dropdown position="bottom">
-                                                                    <x-dropdown.item label="Full Details" x-on:click="$openModal('laonDetailsModal')" wire:click="loadLoanDetails({{ $loan->id }})" />
-                                                                    {{-- <x-dropdown.item label="Ledgers" /> --}}
-                                                                </x-dropdown>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
+                                                @foreach ($userLoans->where('status', 'Approved')->where('is_finished', 0) as $loan)
+                                                    <tr>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">{{ $loan->id }}</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full">{{ $loan->loan_type }} Loan</span></td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">₱{{ number_format($loan->loan_amount, 2) }}</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{ $loan->interest_rate }}%</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{ $loan->loan_term }}</td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                                            <x-dropdown position="bottom">
+                                                                <x-dropdown.item label="Full Details" x-on:click="$openModal('laonDetailsModal')" wire:click="loadLoanDetails({{ $loan->id }})" />
+                                                            </x-dropdown>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                            @else
-                                <div class="text-center py-10 text-gray-500 italic dark:text-neutral-400">
-                                    You have no active loan records yet.
-                                </div>
-                            @endif
-                        </div>
-                        <div class="flex flex-col">
+                            </div>
+                        @else
+                            <div class="text-center py-10 text-gray-500 italic dark:text-neutral-400">
+                                You have no active loan records yet.
+                            </div>
+                        @endif
+                    </div>
+                    <div class="flex flex-col">
                         <hr class="border-yellow-500">
                         <h1 class="font-semibold text-xl mt-5 mx-auto">Loan History</h1>
                         @if ($userLoans->where('status', 'Approved')->where('is_finished', 1)->isNotEmpty())
@@ -230,24 +210,22 @@
                                                 <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
                                                     <x-dropdown position="bottom">
                                                         <x-dropdown.item label="Full Details" x-on:click="$openModal('laonDetailsModal')" wire:click="loadLoanDetails({{ $loan->id }})" />
-                                                        {{-- <x-dropdown.item label="Ledgers" /> --}}
                                                     </x-dropdown>
                                                 </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
-                            </table>
-                        </div>
+                                </table>
+                            </div>
                         @else
                             <div class="mt-4 text-center text-gray-500 italic dark:text-neutral-400">
                                 No loan history available.
                             </div>
                         @endif
                     </div>
-                    </div>
-               
-                @elseif ($activeTab === 'cs')
-                    <div class="w-full h-auto mt-5 flex flex-col-reverse pb-10 lg:pb-0 lg:flex-row justify-center gap-5">
+                </div>
+            @elseif ($activeTab === 'cs')
+                <div class="w-full h-auto mt-5 flex flex-col-reverse pb-10 lg:pb-0 lg:flex-row justify-center gap-5">
                         <div class="w-full lg:max-w-lg">
                             <div class="relative overflow-x-auto">
                                 <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -371,43 +349,107 @@
                             </p>
                         </div>
                     </div>
-                @elseif ($activeTab === 'profile')
-                    <div class="w-full h-auto mt-5 flex flex-col justify-center items-center">
-                        <div class="w-full max-w-xl h-auto flex flex-col justify-center items-center">
-                            <div class="w-[100px] h-[100px]">
+            @elseif ($activeTab === 'profile')
+                <div class="w-full mt-5 flex flex-col items-center">
+                    <div class="w-full max-w-xl flex flex-col items-center bg-gray-50 rounded-xl shadow-md p-6 relative">
+
+                        <div class="flex flex-row mr-auto gap-4">
+                            <div class="w-28 h-28">
                                 @if ($userInfo->info->status === 'Approved' && $userInfo->info->picture)
-                                    <img src="{{ asset('storage/' . $userInfo->info->picture) }}" alt="{{ $userInfo->name }}" class="w-full h-auto rounded-full">
+                                    <img src="{{ asset('storage/' . $userInfo->info->picture) }}"
+                                        alt="{{ $userInfo->name }}"
+                                        class="w-full h-full object-cover rounded-full border-4 border-white shadow-md">
                                 @else
-                                    <img src="{{ asset('storage/' . $userInfo->avatar) }}" alt="{{ $userInfo->name }}" class="w-full h-auto">
+                                    <img src="{{ asset('storage/' . $userInfo->avatar) }}"
+                                        alt="{{ $userInfo->name }}"
+                                        class="w-full h-full object-cover rounded-full border-4 border-white shadow-md">
                                 @endif
                             </div>
-                            <div class="mt-5">
-                                <h1 class="text-xl font-semibold text-center">{{ $userInfo->name }}</h1>
-                                <p class="text-center text-blue-500 text-sm">
+
+                            <div class="mt-4 text-start">
+                                <h1 class="text-xl font-semibold text-gray-800">{{ $userInfo->name }}</h1>
+                                <p class="text-sm text-blue-500">
                                     <span class="text-xs italic text-gray-500">Member since:</span>
                                     {{ \Carbon\Carbon::parse($userInfo->info->approved_at)->format('F j, Y') }}
                                 </p>
-                                
+                                <x-button 
+                                    icon="pencil-square" 
+                                    label="Edit" 
+                                    primary 
+                                    class="w-16 h-6 mt-2 bg-red-600 hover:bg-red-400 focus:bg-red-400 focus:ring-red-400"
+                                    wire:click="$set('showProfileEditModal', true)" 
+                                />
                             </div>
-                            <div class="mt-5 w-full h-auto flex flex-col">
-                                <hr class="border-blue-500">
-                                <div class="w-full h-auto flex flex-col md:flex-row mt-2 justify-between">
-                                    <div>
-                                        <p class="text-sm text-gray-500">Member ID: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->member_id }}</span></p>
-                                        <p class="text-sm text-gray-500">TIN No.: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->tin_number }}</span></p>
-                                        <p class="text-sm text-gray-500">Email: <span class="font-semibold text-lg text-black"> {{ $userInfo->email }}</span></p>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-500">Phone: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->phone }}</span></p>
-                                        <p class="text-sm text-gray-500">Birthday: <span class="font-semibold text-lg text-black"> {{ \Carbon\Carbon::parse($userInfo->info->birthdate)->format('F j, Y') }}</span></p>
-                                        <p class="text-sm text-gray-500">Address: <span class="font-semibold text-lg text-black"> {{ $userInfo->info->address }}</span></p>
-                                    </div>
+                        </div>
+
+                        <x-modal-card title="Edit Profile" wire:model="showProfileEditModal">
+                            <form id="profileEditForm" wire:submit.prevent="updateProfile" class="grid grid-cols-1 gap-4">
+
+                                <x-phone
+                                    id="multiple-mask"
+                                    wire:model.defer="phone"
+                                    label="Phone"
+                                    placeholder="Phone"
+                                    :mask="['+63 ### ### ####']"
+                                />
+
+                                <x-input 
+                                    label="Address" 
+                                    placeholder="Address" 
+                                    wire:model.defer="address" 
+                                />
+                            </form>
+
+                            <x-slot name="footer" class="flex justify-between gap-x-4">
+                                <div class="flex gap-x-4 ml-auto">
+                                    <x-button flat label="Cancel" x-on:click="close" />
+                                    <x-button
+                                        primary
+                                        label="Save"
+                                        type="submit"
+                                        form="profileEditForm"
+                                        wire:target="updateProfile"
+                                        wire:loading.attr="disabled"
+                                    >
+                                        <span wire:loading.remove wire:target="updateProfile">Save</span>
+                                        <span wire:loading wire:target="updateProfile">Saving...</span>
+                                    </x-button>
+                                </div>
+                            </x-slot>
+                        </x-modal-card>
+
+                        <div class="mt-6 w-full">
+                            <hr class="border-blue-500">
+                            <div class="mt-4 flex flex-col md:flex-row justify-between gap-4">
+                                <div class="space-y-1">
+                                    <p class="text-sm text-gray-500">Member ID: 
+                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->member_id }}</span>
+                                    </p>
+                                    <p class="text-sm text-gray-500">TIN No.: 
+                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->tin_number }}</span>
+                                    </p>
+                                    <p class="text-sm text-gray-500">Email: 
+                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->email }}</span>
+                                    </p>
+                                </div>
+                                <div class="space-y-1">
+                                    <p class="text-sm text-gray-500">Phone: 
+                                        <span class="font-semibold text-lg text-gray-800"> {{ ltrim($userInfo->info->phone, '0') }}</span>
+                                    </p>
+                                    <p class="text-sm text-gray-500">Birthday: 
+                                        <span class="font-semibold text-lg text-gray-800">
+                                            {{ \Carbon\Carbon::parse($userInfo->info->birthdate)->format('F j, Y') }}
+                                        </span>
+                                    </p>
+                                    <p class="text-sm text-gray-500">Address: 
+                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->address }}</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                @endif
-            </div>
+                </div>
+            @endif
         </div>
     </div>
     <x-modal name="laonDetailsModal" persistent>
@@ -656,4 +698,3 @@
     </script>
 
 </div>
- 

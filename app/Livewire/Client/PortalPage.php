@@ -9,11 +9,13 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Spatie\LivewireFilepond\WithFilePond;
 use WireUi\Traits\WireUiActions;
 
+#[Title('Portal')]
 class PortalPage extends Component
 {
     use WireUiActions;
@@ -50,6 +52,10 @@ class PortalPage extends Component
 
     public $userInfo;
 
+    public $showProfileEditModal = false;
+    public $phone;
+    public $address;
+
     protected $queryString = ['activeTab'];
 
     public function setActiveTab($tab)
@@ -75,6 +81,10 @@ class PortalPage extends Component
             $this->user_id = Auth::user()->id;
             $this->user_name = Auth::user()->name;
             $this->userInfo = User::with('info')->find(Auth::id());
+
+            //for edit profile fields
+            $this->phone = $this->userInfo->info->phone ?? '';
+            $this->address = $this->userInfo->info->address ?? '';
 
             if ($userProfile && $userProfile->status == 'Pending') {
                 return redirect()->route('user.home')->with('portal_error', 'Your membership application is currently under review. Please wait for approval.');
@@ -134,7 +144,20 @@ class PortalPage extends Component
             return false;
         }
 
-        $userLoans = $this->userLoans ?? Auth::user()->loans()->get();
+        $user = Auth::user();
+
+        if (!$user->info() || !$user->info->approved_at) {
+            return false;
+        }
+
+        $approvedAt = Carbon::parse($user->info->approved_at);
+        $diff = $approvedAt->diff(now());
+        
+        if ($diff->y < 1) {
+            return false;
+        }
+
+        $userLoans = $this->userLoans ?? $user->loans()->get();
 
         if ($userLoans->isEmpty()) {
             return true;
@@ -148,7 +171,7 @@ class PortalPage extends Component
         if (! $this->canApply) {
             $this->notification()->error(
                 'Loan Application Blocked',
-                'You have a pending or active loan. Please settle it before applying again.'
+                'You must be a member for at least 1 year and have no pending or active loans to apply for a loan.'
             );
             return;
         }
@@ -157,98 +180,135 @@ class PortalPage extends Component
 
     public function calculateLoan()
     {
-            $loanAmount = (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? '');
+        $loanAmount = (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? '');
+
+        if (Auth::check() && Auth::user()->role === 'user') {
+            $interestRate = 0;
+        } else {
             $interestRate = (float) ($this->interest_rate ?? 0);
-            $loanTerm = (int) ($this->loan_term ?? 0);
-            $paymentFrequency = $this->payment_frequency ?? 'monthly';
+        }
 
-            $interestAmount = $loanAmount * ($interestRate / 100);
-            $this->interest_amount = $interestAmount;
+        $loanTerm = (int) ($this->loan_term ?? 0);
+        $paymentFrequency = $this->payment_frequency ?? 'monthly';
 
-            $totalPayment = $loanAmount + $interestAmount;
-            $this->total_payment = $totalPayment;
+        $interestAmount = $loanAmount * ($interestRate / 100);
+        $this->interest_amount = $interestAmount;
 
-            $count = 0;
-            
-            if ($loanTerm > 0 && $paymentFrequency) {
-                $count = match ($paymentFrequency) {
-                    'daily' => $loanTerm * 30,     
-                    'weekly' => $loanTerm * 4.33,  
-                    'biweekly' => $loanTerm * 2.17,
-                    'monthly' => $loanTerm,   
-                    default => 0, 
-                };
-            }
+        $totalPayment = $loanAmount + $interestAmount;
+        $this->total_payment = $totalPayment;
 
-            $paymentPerTerm = $count > 0 ? $totalPayment / $count : 0;
-            $this->payment_per_term = $paymentPerTerm;
-
-            $today = Carbon::now();
-            $start = match ($paymentFrequency) {
-                'daily' => $today->copy()->addDay(),
-                'weekly' => $today->copy()->addWeek(),
-                'biweekly' => $today->copy()->addWeeks(2),
-                'monthly' => $today->copy()->addMonth(),
-                default => $today,
+        $count = 0;
+        
+        if ($loanTerm > 0 && $paymentFrequency) {
+            $count = match ($paymentFrequency) {
+                'daily' => $loanTerm * 30,     
+                'weekly' => $loanTerm * 4.33,  
+                'biweekly' => $loanTerm * 2.17,
+                'monthly' => $loanTerm,   
+                default => 0, 
             };
+        }
 
-            $end = match ($paymentFrequency) {
-                'daily' => $start->copy()->addDays($loanTerm * 30),
-                'weekly' => $start->copy()->addWeeks((int) round($loanTerm * 4.34)),
-                'biweekly' => $start->copy()->addWeeks(($loanTerm * 2.17) + 2),
-                'monthly' => $start->copy()->addMonths($loanTerm - 1), 
-                default => $start,
-            };
+        $paymentPerTerm = $count > 0 ? $totalPayment / $count : 0;
+        $this->payment_per_term = $paymentPerTerm;
 
-            $this->start_date = $start;
-            $this->end_date = $end;
+        $today = Carbon::now();
+        $start = match ($paymentFrequency) {
+            'daily' => $today->copy()->addDay(),
+            'weekly' => $today->copy()->addWeek(),
+            'biweekly' => $today->copy()->addWeeks(2),
+            'monthly' => $today->copy()->addMonth(),
+            default => $today,
+        };
+
+        $end = match ($paymentFrequency) {
+            'daily' => $start->copy()->addDays($loanTerm * 30),
+            'weekly' => $start->copy()->addWeeks((int) round($loanTerm * 4.34)),
+            'biweekly' => $start->copy()->addWeeks(($loanTerm * 2.17) + 2),
+            'monthly' => $start->copy()->addMonths($loanTerm - 1), 
+            default => $start,
+        };
+
+        $this->start_date = $start;
+        $this->end_date = $end;
     }
+
     public function updated($property)
     {
         if (in_array($property, ['loan_amount', 'interest_rate', 'loan_term', 'payment_frequency', 'start_date', 'end_date'])) {
             $this->calculateLoan();
         }
     }
+
     public function submitLoanApplication()
     {
-
         try {
+            $this->calculateLoan();
+            
+            if (Auth::check() && Auth::user()->role === 'user') {
+                $calculatedInterestRate = 0;
+            } else {
+                $calculatedInterestRate = (float) ($this->interest_rate ?? 0);
+            }
+            
             $this->validate([
                 'user_id' => 'required|exists:users,id',
                 'loan_amount' => 'required|numeric|max:100000',
                 'loan_type' => 'required|string|max:255',
-                'interest_rate' => 'required|numeric|min:1|max:100',
+                'interest_rate' => 'nullable|numeric|max:100',
                 'loan_term' => 'required|integer|min:1|max:60',
-                'payment_frequency' => 'required|string|in:daily,weekly,bi-weekly,monthly',
+                'payment_frequency' => 'required|string|in:daily,weekly,biweekly,monthly',
                 'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after:start_date',
-                'interest_amount' => 'nullable|numeric|min:1',
-                'total_payment' => 'nullable|numeric',
-                'payment_per_term' => 'nullable|numeric',
+                'interest_amount' => 'nullable|numeric|min:0',
+                'total_payment' => 'nullable|numeric|min:0',
+                'payment_per_term' => 'nullable|numeric|min:0',
             ]);
 
             loan::create([
                 'user_id' => $this->user_id,
                 'loan_type' => $this->loan_type,
                 'loan_amount' => (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? ''),
-                'interest_rate' => (float) ($this->interest_rate ?? 0),
+                'interest_rate' => $calculatedInterestRate,
                 'loan_term' => (int) ($this->loan_term ?? 0),
                 'payment_frequency' => $this->payment_frequency,
-                'start_date' => $this->start_date,
-                'end_date' => $this->end_date,
+                'start_date' => $this->start_date instanceof Carbon ? $this->start_date->format('Y-m-d H:i:s') : $this->start_date,
+                'end_date' => $this->end_date instanceof Carbon ? $this->end_date->format('Y-m-d H:i:s') : $this->end_date,
                 'interest_amount' => (float) ($this->interest_amount ?? 0),
                 'total_payment' => (float) ($this->total_payment ?? 0),
                 'payment_per_term' => (float) ($this->payment_per_term ?? 0),
             ]);
+            
             $this->notification()->success(
                 'Success!',
-                'Loan application submitted successfully. We’ll notify you once it’s approved.'
+                'Loan application submitted successfully. We\'ll notify you once it\'s approved.'
             );
+            
             $this->showLoanApplicationModal = false;
+            
+            $this->reset([
+                'loan_amount', 
+                'loan_type', 
+                'interest_rate', 
+                'loan_term', 
+                'payment_frequency',
+                'start_date',
+                'end_date',
+                'interest_amount',
+                'total_payment',
+                'payment_per_term'
+            ]);
+            
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->notification()->error(
                 'Error!',
-                'Loan application is invalid.'
+                'Loan application is invalid. Please check your input fields.'
+            );
+            return;
+        } catch (\Exception $e) {
+            $this->notification()->error(
+                'Error!',
+                'An unexpected error occurred. Please try again.'
             );
             return;
         }
@@ -310,6 +370,31 @@ class PortalPage extends Component
             'Payment Submitted',
             'Your payment has been submitted for admin review.'
         );
+    }
+    public function updateProfile()
+    {
+        $this->validate([
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        $phone = $this->phone;
+        if ($phone && !str_starts_with($phone, '+63')) {
+            $phone = ltrim($phone, '0');
+            $phone = '+63 ' . $phone;
+        }
+
+        $user = Auth::user();
+
+        $user->info->update([
+            'phone'   => $phone,
+            'address' => $this->address,
+        ]);
+
+        $this->notification()->success('Profile Updated', 'Your profile information has been saved successfully.');
+
+        $this->userInfo->refresh();
+        $this->showProfileEditModal = false;
     }
 
     public function render()

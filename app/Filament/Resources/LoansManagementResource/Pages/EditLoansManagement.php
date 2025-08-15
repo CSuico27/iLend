@@ -24,8 +24,8 @@ class EditLoansManagement extends EditRecord
     {
         return 'View Ledger';
     }
-    protected function getFormActions(): array
-    {
-        return [];
-    }
+    // protected function getFormActions(): array
+    // {
+    //     return [];
+    // }
 }
