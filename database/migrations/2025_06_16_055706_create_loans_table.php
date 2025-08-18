@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('loan_type');
             $table->decimal('loan_amount', 12, 2);
-            $table->unsignedInteger('interest_rate');
+            $table->unsignedInteger('interest_rate')->nullable();
             $table->unsignedInteger('loan_term');
             $table->string('payment_frequency');
             $table->date('start_date');

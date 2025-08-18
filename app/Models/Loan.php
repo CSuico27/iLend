@@ -34,8 +34,17 @@ class Loan extends Model
     }
     protected static function booted()
     {
+        //when loan is created
         static::created(function ($loan) {
             $loan->generateLedgers();
+        });
+
+        //when updating something in the loan
+        static::updated(function ($loan) {
+            if ($loan->wasChanged(['loan_amount', 'interest_rate', 'loan_term', 'payment_frequency', 'interest_amount', 'total_payment', 'payment_per_term', 'start_date', 'end_date'])) {
+                $loan->ledgers()->delete(); 
+                $loan->generateLedgers();   
+            }
         });
     }
 

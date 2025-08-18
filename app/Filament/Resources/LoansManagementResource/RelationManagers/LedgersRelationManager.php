@@ -33,7 +33,7 @@ class LedgersRelationManager extends RelationManager
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['loan.user.info']);
+            ->with(['loan.user.info', 'payment']);
     }
 
     public function form(Form $form): Form
@@ -229,6 +229,7 @@ class LedgersRelationManager extends RelationManager
                                 'ledger' => $record,
                                 'loan' => $record->loan,
                                 'user' => $record->loan->user,
+                                'payment' => $payment,
                             ]);
 
                             $userName = str_replace(' ', '_', strtolower($record->loan->user->name));
@@ -337,6 +338,7 @@ class LedgersRelationManager extends RelationManager
                                     'ledger' => $record,
                                     'loan' => $record->loan,
                                     'user' => $record->loan->user,
+                                    'payment' => $payment,
                                 ]);
 
                                 $userName = str_replace(' ', '_', strtolower($record->loan->user->name));

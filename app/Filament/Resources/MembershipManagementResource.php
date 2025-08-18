@@ -37,7 +37,10 @@ class MembershipManagementResource extends Resource
     protected static ?string $navigationLabel = 'Membership Management';
     protected static ?string $navigationIcon = 'heroicon-o-user';
     protected static ?int $navigationSort = 1;
-
+    public static function canCreate(): bool
+    {
+        return false;
+    }
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::whereHas('info', function ($query) {
