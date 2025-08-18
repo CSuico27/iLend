@@ -1,36 +1,72 @@
 <div class="w-full h-auto flex overflow-hidden">
-    <div class="flex flex-col justify-start w-64 h-screen border-r border-gray-200 dark:border-neutral-700 p-4">
-        <div class="w-full h-auto">
-            <nav class="flex flex-col gap-y-4" aria-label="Tabs" role="tablist" aria-orientation="vertical">
-                <button wire:click="setActiveTab('dashboard')" type="button" class="{{ $activeTab === 'dashboard' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-1" aria-selected="true" data-hs-tab="#tabs-with-icons-1" aria-controls="tabs-with-icons-1" role="tab">
-                    <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+    <div x-data="{ sidebarOpen: false }" class="relative">
+        <div class="fixed top-[5.5rem] z-50 md:hidden transition-all duration-300 transform" 
+            :class="sidebarOpen ? 'translate-x-[13rem]' : 'translate-x-0'">
+            <button @click="sidebarOpen = !sidebarOpen" 
+                    class="group relative inline-flex items-center p-2 text-sm font-medium text-white transition-all duration-300 transform bg-[#ff3134] h-12 rounded-r-lg focus:outline-none">
+                
+                <span x-show="!sidebarOpen" x-transition.duration.300ms>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                        <path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                     </svg>
-                    Dashboard
-                </button>
-                <button wire:click="setActiveTab('loans')" type="button" class="{{ $activeTab === 'loans' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-2" aria-selected="false" data-hs-tab="#tabs-with-icons-2" aria-controls="tabs-with-icons-2" role="tab">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+                </span>
+                <span x-show="sidebarOpen" x-transition.duration.300ms>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                        <path fill-rule="evenodd" d="M11.78 5.22a.75.75 0 0 1 0 1.06L8.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd" />
                     </svg>
-                    Loans
-                </button>
-                <button wire:click="activateCreditScoreTab" type="button" class="{{ $activeTab === 'cs' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
-                    </svg>
-                    Credit Score
-                </button>
-                <button wire:click="setActiveTab('profile')" type="button" class="{{ $activeTab === 'profile' ? 'border-[#ff3134] text-[#ff3134] font-semibold' : 'border-transparent text-gray-500' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>
-                    Profile
-                </button>
-            </nav>
+                </span>
+                
+                <span class="absolute left-full top-1/2 -translate-y-1/2 z-50 ml-2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <span x-text="sidebarOpen ? 'Close Sidebar' : 'Open Sidebar'"></span>
+                </span>
+            </button>
+        </div>
+        
+        <div class="flex flex-col justify-start z-70 w-54 md:w-64 h-screen border-t border-r border-gray-200 dark:border-neutral-700 p-4 bg-white dark:bg-neutral-900 
+                    fixed top-0 md:z-40 md:relative md:ml-0 md:transform-none md:transition-none" 
+            :class="{ 'transition-transform duration-300 ease-in-out transform translate-x-0': sidebarOpen, 'transition-transform duration-300 ease-in-out transform -translate-x-full': !sidebarOpen, 'md:translate-x-0': true }">
+            
+            <div class="w-full h-auto">
+                <nav class="flex flex-col gap-y-4" aria-label="Tabs" role="tablist" aria-orientation="vertical">
+                    <a href="/" class=" block md:hidden">
+                        <img src="{{ asset('images/ilend-logo.png') }}" class="h-14" alt="iLend Logo">
+                    </a>
+                    <button wire:click="setActiveTab('dashboard')" @click="sidebarOpen = false" type="button" class="{{ $activeTab === 'dashboard' ? 'border-[#ff3134] text-[#ff3134] font-semibold bg-gray-100 dark:bg-neutral-800 rounded-lg' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:rounded-lg cursor-pointer' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-1" aria-selected="true" data-hs-tab="#tabs-with-icons-1" aria-controls="tabs-with-icons-1" role="tab">
+                        <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Dashboard
+                    </button>
+                    <button wire:click="setActiveTab('loans')" @click="sidebarOpen = false" type="button" class="{{ $activeTab === 'loans' ? 'border-[#ff3134] text-[#ff3134] font-semibold bg-gray-100 dark:bg-neutral-800 rounded-lg' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:rounded-lg cursor-pointer' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-2" aria-selected="false" data-hs-tab="#tabs-with-icons-2" aria-controls="tabs-with-icons-2" role="tab">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.375 3.375 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
+                        </svg>
+                        Loans
+                    </button>
+                    <button wire:click="activateCreditScoreTab" @click="sidebarOpen = false" type="button" class="{{ $activeTab === 'cs' ? 'border-[#ff3134] text-[#ff3134] font-semibold bg-gray-100 dark:bg-neutral-800 rounded-lg' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:rounded-lg cursor-pointer' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-4" aria-selected="false" data-hs-tab="#tabs-with-icons-4" aria-controls="tabs-with-icons-4" role="tab">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                        </svg>
+                        Credit Score
+                    </button>
+                    <button wire:click="setActiveTab('profile')" @click="sidebarOpen = false" type="button" class="{{ $activeTab === 'profile' ? 'border-[#ff3134] text-[#ff3134] font-semibold bg-gray-100 dark:bg-neutral-800 rounded-lg' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:rounded-lg cursor-pointer' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                        Profile
+                    </button>
+                    <button wire:click="setActiveTab('chats')" @click="sidebarOpen = false" type="button" class="{{ $activeTab === 'chats' ? 'border-[#ff3134] text-[#ff3134] font-semibold bg-gray-100 dark:bg-neutral-800 rounded-lg' : 'border-transparent text-gray-500 hover:bg-gray-100 dark:hover:bg-neutral-800 hover:rounded-lg cursor-pointer' }} py-3 px-4 inline-flex items-center gap-x-2 border-l-2 text-sm text-start" id="tabs-with-icons-item-3" aria-selected="false" data-hs-tab="#tabs-with-icons-3" aria-controls="tabs-with-icons-3" role="tab">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                        </svg>
+                        Chats
+                    </button>
+                </nav>
+            </div>
         </div>
     </div>
-    <div class="flex-grow w-full h-auto p-4">
+    <div class="flex-grow w-full h-auto p-4 mx-auto">
         <h1 class="font-semibold text-xl mb-10 flex justify-center items-center">Welcome to iLEND</h1>
         <div class="mt-3">
             @if ($activeTab === 'dashboard')
@@ -449,6 +485,10 @@
                         </div>
                     </div>
                 </div>
+                @elseif ($activeTab === 'chats')
+                    <div class="h-screen">
+                        @livewire('wirechat')
+                    </div>
             @endif
         </div>
     </div>
