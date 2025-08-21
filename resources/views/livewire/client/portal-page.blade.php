@@ -611,7 +611,7 @@
                                                                         id="paymentForm"
                                                                         wire:submit.prevent="save({{ $ledger->id }})"
                                                                     >
-                                                                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                                                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" x-data="{ payment_method: @entangle('payment_method') }">
                                                                             <x-select 
                                                                                 label="Payment Method" 
                                                                                 wire:model="payment_method" 
@@ -621,12 +621,19 @@
                                                                                 <x-select.option label="GCash" value="GCash" />
                                                                                 <x-select.option label="Bank Transfer" value="Bank Transfer" />
                                                                             </x-select>
+
                                                                             <x-input 
                                                                                 label="Amount" 
                                                                                 wire:model="amount" 
                                                                                 readonly 
                                                                                 :error="$errors->first('amount')"
                                                                             />
+
+                                                                            <div x-show="payment_method === 'GCash'" class="sm:col-span-2 flex justify-center">
+                                                                                <img src="{{ asset('images/gcash-qr.jfif') }}"
+                                                                                    class="max-w-[200px] h-auto rounded-lg shadow-md mx-auto" />
+                                                                            </div>
+
                                                                             <div class="sm:col-span-2">
                                                                                 <p class="text-start font-semibold">Upload Proof of Billing</p>
                                                                                 <x-filepond::upload wire:model="proof_of_billing" />

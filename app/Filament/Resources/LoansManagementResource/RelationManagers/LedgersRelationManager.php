@@ -12,6 +12,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\Action; 
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\HtmlString;
 use Livewire\Attributes\Title;
 
 class LedgersRelationManager extends RelationManager
@@ -176,10 +178,18 @@ class LedgersRelationManager extends RelationManager
                             ->label('Payment Method')
                             ->options([
                                 'Cash' => 'Cash',
-                                'Gcash' => 'Gcash',
+                                'GCash' => 'GCash',
                                 'Bank Transfer' => 'Bank Transfer',
                             ])
-                            ->required(),
+                            ->required()
+                            ->reactive(),
+                        Placeholder::make('gcash_qr')
+                            ->label('GCash QR')
+                            ->content(fn () => new HtmlString(
+                                '<img src="'.asset('images/gcash-qr.jfif').'" style="max-width: 250px; height: auto; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">'
+                            ))
+                            ->visible(fn ($get) => $get('payment_method') === 'GCash')
+                            ->extraAttributes(['class' => 'flex justify-center']),
                         FileUpload::make('proof_of_billing')
                             ->label('Upload Proof of Billing')
                             ->directory('proof-of-billing')

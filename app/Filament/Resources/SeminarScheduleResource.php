@@ -57,6 +57,7 @@ class SeminarScheduleResource extends Resource
                     ->displayFormat('m/d/Y')
                     ->native(false)
                     ->closeOnDateSelection()
+                    ->required()
                     ->suffixIcon('heroicon-o-calendar')
                     ->columnSpanFull(),
 
@@ -165,14 +166,17 @@ class SeminarScheduleResource extends Resource
                                     ->schema(function (SeminarSchedule $record) {
                                         return collect($record->assigned_users_data ?? [])
                                             ->map(fn($user, $index) =>
-                                                InfolistGrid::make(2)
+                                                InfolistGrid::make(['default' => 2,])
                                                     ->schema([
                                                         TextEntry::make("name_{$index}")
                                                             ->default($user['name'])
                                                             ->label($index === 0 ? 'Name' : ''),
                                                         TextEntry::make("email_{$index}")
                                                             ->default($user['email'])
-                                                            ->label($index === 0 ? 'Email' : ''),
+                                                            ->label($index === 0 ? 'Email' : '')
+                                                            ->extraAttributes([
+                                                                'class' => 'max-w-[120px] overflow-x-auto whitespace-nowrap sm:max-w-none sm:overflow-visible',
+                                                            ])
                                                     ])
                                             )
                                             ->values()
