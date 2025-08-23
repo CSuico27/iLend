@@ -128,10 +128,10 @@ class MembershipManagementResource extends Resource
                                                 Tab::make('Requirements')
                                                     ->icon('heroicon-o-identification')
                                                     ->schema([
-                                                        FileUpload::make('picture')
-                                                            ->label('2x2 Picture')
+                                                        FileUpload::make('biodata')
+                                                            ->label('Biodata')
                                                             ->image()
-                                                            ->directory('user-picture')
+                                                            ->directory('user-biodata')
                                                             ->preserveFilenames()
                                                             ->disk('public')
                                                             ->imageCropAspectRatio('1:1')
@@ -253,8 +253,8 @@ class MembershipManagementResource extends Resource
 
                         $info = $record->info;
 
-                        if ($info?->picture) {
-                            Storage::disk('public')->delete($info->picture);
+                        if ($info?->biodata) {
+                            Storage::disk('public')->delete($info->biodata);
                         }
 
                         if ($info?->brgy_clearance) {
@@ -270,7 +270,7 @@ class MembershipManagementResource extends Resource
                             'birthdate' => null,
                             'gender' => null,
                             'address' => null,
-                            'picture' => null,
+                            'biodata' => null,
                             'brgy_clearance' => null,
                             'valid_id' => null,
                             'tin_number' => null,

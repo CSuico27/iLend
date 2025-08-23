@@ -391,8 +391,8 @@
 
                         <div class="flex flex-row mr-auto gap-4">
                             <div class="w-28 h-28">
-                                @if ($userInfo->info->status === 'Approved' && $userInfo->info->picture)
-                                    <img src="{{ asset('storage/' . $userInfo->info->picture) }}"
+                                @if ($userInfo->info->status === 'Approved' && $userInfo->avatar)
+                                    <img src="{{ asset('storage/' . $userInfo->avatar) }}"
                                         alt="{{ $userInfo->name }}"
                                         class="w-full h-full object-cover rounded-full border-4 border-white shadow-md">
                                 @else
@@ -420,6 +420,12 @@
 
                         <x-modal-card title="Edit Profile" wire:model="showProfileEditModal">
                             <form id="profileEditForm" wire:submit.prevent="updateProfile" class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Change Profile Picture
+                                    </label>
+                                    <x-filepond::upload wire:model="avatar" />
+                                </div>
 
                                 <x-phone
                                     id="multiple-mask"
@@ -486,7 +492,7 @@
                     </div>
                 </div>
                 @elseif ($activeTab === 'chats')
-                    <div class="h-screen">
+                    <div class="h-[calc(100vh_-_10.0rem)]">
                         @livewire('wirechat')
                     </div>
             @endif

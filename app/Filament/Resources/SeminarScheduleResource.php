@@ -140,7 +140,7 @@ class SeminarScheduleResource extends Resource
                             ->with('info') 
                             ->get()
                             ->map(function ($user) {
-                                return $user->info?->picture;
+                                return $user->avatar;
                             })
                             ->take(5) 
                             ->toArray();

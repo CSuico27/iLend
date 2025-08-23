@@ -20,6 +20,7 @@ class PortalPage extends Component
 {
     use WireUiActions;
     use WithFilePond;
+    use WithFileUploads;
     public $activeTab = 'dashboard';
 
     public $activeLoanDetails;
@@ -55,6 +56,7 @@ class PortalPage extends Component
     public $showProfileEditModal = false;
     public $phone;
     public $address;
+    public $avatar;
 
     protected $queryString = ['activeTab'];
 
@@ -376,6 +378,7 @@ class PortalPage extends Component
         $this->validate([
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
+            'avatar'  => 'nullable|image|max:2048',
         ]);
 
         $phone = $this->phone;
@@ -385,6 +388,11 @@ class PortalPage extends Component
         }
 
         $user = Auth::user();
+
+         if ($this->avatar) {
+            $path = $this->avatar->store('avatars', 'public');
+            $user->update(['avatar' => $path]); // avatar column in users table
+        }
 
         $user->info->update([
             'phone'   => $phone,

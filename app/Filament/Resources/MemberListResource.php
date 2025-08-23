@@ -128,11 +128,11 @@ class MemberListResource extends Resource
                                                 ]),
 
                                                 Tab::make('Requirements Submitted')->schema([
-                                                    FileUpload::make('picture')
-                                                        ->label('2x2 Picture')
+                                                    FileUpload::make('biodata')
+                                                        ->label('Biodata')
                                                         ->image()
                                                         ->disk('public')
-                                                        ->directory('user-picture')
+                                                        ->directory('user-biodata')
                                                         ->openable()
                                                         ->disabled(),
 
