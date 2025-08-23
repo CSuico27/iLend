@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('birthdate')->nullable();
             $table->enum('gender' ,['Male', 'Female', 'Not Specified'])->nullable();
             $table->string('address')->nullable();
-            $table->string('picture')->nullable();
+            $table->string('biodata')->nullable();
             $table->string('brgy_clearance')->nullable();
             $table->string('valid_id')->nullable();
             $table->boolean('is_applied_for_membership')->default(0);

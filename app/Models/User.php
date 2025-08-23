@@ -76,8 +76,8 @@ class User extends Authenticatable
     }
     public function getCoverUrlAttribute(): ?string
     {
-        if ($this->info?->picture) {
-            return Storage::url($this->info->picture);
+        if ($this->avatar) {
+            return Storage::url($this->avatar);
         }
 
         return asset('images/ilend-logo - Copy.png');

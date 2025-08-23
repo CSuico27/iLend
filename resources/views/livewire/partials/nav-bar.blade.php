@@ -23,8 +23,8 @@
                       <div class="hs-dropdown relative inline-flex md:flex md:items-center md:justify-center">
                           <button id="hs-dropdown-default" type="button" class="hs-dropdown-toggle py-2 inline-flex items-center gap-x-2 text-base font-medium rounded-lg text-[#2b2b31]">
                             <div class="flex justify-center items-center gap-2">
-                              @if (auth()->user()->role == 'user' && auth()->user()->info->status === 'Approved' && auth()->user()->info->picture)
-                                <img src="{{ asset('storage/' . auth()->user()->info->picture) }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full">
+                              @if (auth()->user()->role == 'user' && auth()->user()->info->status === 'Approved' && auth()->user()->avatar)
+                                <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full">
                               @elseif(auth()->user()->role == 'admin')
                                 <img src="{{ asset('images/admin-profile.svg') }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full">
                               @else

@@ -109,8 +109,8 @@
                         <div class="h-auto px-4 py-10 bg-gray-50 flex justify-center items-center border border-dashed border-gray-200 rounded-xl dark:bg-neutral-800 dark:border-neutral-700">
                             <div class="w-full h-auto px-0 lg:px-10 flex flex-col gap-3">
                                 <div>
-                                    <p class="font-semibold">Your Picture</p>
-                                    <x-filepond::upload wire:model="picture" />
+                                    <p class="font-semibold">Your Biodata</p>
+                                    <x-filepond::upload wire:model="biodata" />
                                 </div>
                                 
                                 <div>
