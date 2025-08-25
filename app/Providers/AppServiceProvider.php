@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Ledger;
+use App\Models\Loan;
+use App\Models\Payment;
+use App\Observers\LogObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Loan::observe(LogObserver::class);
+        Payment::observe(LogObserver::class);
+        Ledger::observe(LogObserver::class);
     }
 }
