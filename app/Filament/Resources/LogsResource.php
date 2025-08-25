@@ -91,7 +91,6 @@ class LogsResource extends Resource
                     Forms\Components\DatePicker::make('created_from')
                         ->maxDate(now()),
                     Forms\Components\DatePicker::make('created_until')
-                        ->default(now())
                         ->maxDate(now()),
                 ])
                 ->query(function (Builder $query, array $data): Builder {
