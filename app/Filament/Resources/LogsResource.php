@@ -66,10 +66,9 @@ class LogsResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('for_user')
                     ->label('Affected User')
-                    ->searchable(query: function ($query, $search) {
-                        $query->orWhereHas('loan.user', fn ($q) => $q->where('name', 'like', "%{$search}%"));
-                    })
-                    ->getStateUsing(fn ($record) => $record->loan?->user?->name ?? 'N/A'),
+                    ->getStateUsing(fn ($record) => 
+                        $record->changes ? json_decode($record->changes)->affected_user ?? 'N/A' : 'N/A'
+                    ),
                 Tables\Columns\TextColumn::make('amount')
                     ->money('PHP', true),
                 Tables\Columns\TextColumn::make('status')
