@@ -42,6 +42,7 @@ class Loan extends Model
         //when updating something in the loan
         static::updated(function ($loan) {
             if ($loan->wasChanged(['loan_amount', 'interest_rate', 'loan_term', 'payment_frequency', 'interest_amount', 'total_payment', 'payment_per_term', 'start_date', 'end_date'])) {
+                $loan->recomputeLoan();
                 $loan->ledgers()->delete(); 
                 $loan->generateLedgers();   
             }
@@ -84,4 +85,31 @@ class Loan extends Model
 
         DB::table('ledgers')->insert($ledgers);
     }
+
+    public function recomputeLoan()
+    {
+        $principal = $this->loan_amount;
+        $rate = $this->interest_rate / 100;
+        $term = $this->loan_term;
+
+        $interestAmount = $principal * $rate * $term;
+        $totalPayment = $principal + $interestAmount;
+
+        $paymentCount = match ($this->payment_frequency) {
+            'daily' => $term * 30,
+            'weekly' => round($term * 4.33),
+            'biweekly' => round($term * 2.17),
+            'monthly' => $term,
+            default => 0,
+        };
+
+        $paymentPerTerm = $paymentCount > 0 ? $totalPayment / $paymentCount : 0;
+
+        $this->updateQuietly([
+            'interest_amount'   => $interestAmount,
+            'total_payment'     => $totalPayment,
+            'payment_per_term'  => $paymentPerTerm,
+        ]);
+    }
+
 }
