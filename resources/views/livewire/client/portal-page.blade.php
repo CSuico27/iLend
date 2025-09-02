@@ -75,15 +75,15 @@
                         <x-modal-card title="Loan Application" wire:model="showLoanApplicationModal">
                             <form id="loanApplicationForm" wire:submit.prevent="submitLoanApplication" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="sm:col-span-2">
-                                    <x-input label="Pangalan ng Umutang" placeholder="Your full name" wire:model="user_name" readonly />
-                                    <x-select label="Uri ng Loan" wire:model.live="loan_type" placeholder="Uri ng Loan">
+                                    <x-input label="Borrower's Name" placeholder="Your full name" wire:model="user_name" readonly />
+                                    <x-select label="Loan Type" wire:model.live="loan_type" placeholder="Enter loan type">
                                         <x-select.option label="Regular Loan" value="regular" />
                                         <x-select.option label="Emergency Loan" value="emergency" />
                                         <x-select.option label="Car Loan" value="car" />
                                     </x-select>
                                     <x-currency
-                                        label="Halagang Hiniram"
-                                        placeholder="Halagang Hiniram"
+                                        label="Loan Amount"
+                                        placeholder="Enter loan amount"
                                         wire:model.live="loan_amount"
                                         prefix="₱"
                                     />
@@ -93,7 +93,7 @@
                                         wire:model.live="interest_rate"
                                         readonly
                                     /> --}}
-                                    <x-select label="Tagal ng Buwan" wire:model.live="loan_term" placeholder="Tagal ng Buwan">
+                                    <x-select label="Loan Term" wire:model.live="loan_term" placeholder="Enter loan term">
                                         <x-select.option label="3 Months" value="3" />
                                         <x-select.option label="6 Months" value="6" />
                                         <x-select.option label="9 Months" value="9" />
@@ -102,16 +102,16 @@
                                     </x-select>
                                 </div>
                                 
-                                <x-radio id="daily" label="Araw-araw" wire:model.live="payment_frequency" value="daily" />
-                                <x-radio id="weekly" label="Lingguhan" wire:model.live="payment_frequency" value="weekly" />
-                                <x-radio id="biweekly" label="Ikalawang Linggo" wire:model.live="payment_frequency" value="biweekly" />
-                                <x-radio id="monthly" label="Buwanan" wire:model.live="payment_frequency" value="monthly" />
-                                <x-input label="Date ng Unang Bayad" placeholder="Unang Bayad" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
-                                <x-input label="Date ng Huling Bayad" placeholder="Huling Bayad" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
-                                <x-input label="Kabuuang Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly />
-                                <x-input label="Kabuuang Babayaran" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
+                                <x-radio id="daily" label="Daily" wire:model.live="payment_frequency" value="daily" />
+                                <x-radio id="weekly" label="Weekly" wire:model.live="payment_frequency" value="weekly" />
+                                <x-radio id="biweekly" label="Biweekly" wire:model.live="payment_frequency" value="biweekly" />
+                                <x-radio id="monthly" label="Monthly" wire:model.live="payment_frequency" value="monthly" />
+                                <x-input label="First Payment Date" placeholder="First payment date" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
+                                <x-input label="Last Payment Date" placeholder="Last payment date" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
+                                <x-input label="Total Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly />
+                                <x-input label="Total Loan Payable" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
                                 <div class="sm:col-span-2 w-full">
-                                    <x-input label="Halagang Babayaran Kada Hulugan" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly/>
+                                    <x-input label="Payment Per Term" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly/>
                                 </div>
                             </form>
                             <x-slot name="footer" class="flex justify-between gap-x-4">
@@ -167,12 +167,33 @@
                             </div>
                         </x-card>
                     </div>
-                    <div class="flex justify-end mt-4">
+                   <div class="flex flex-col items-end mt-4 space-y-2">
                         <x-button
                             label="Apply for Loan"
                             class="bg-red-600 hover:bg-red-400 focus:bg-red-400 focus:ring-red-400"
                             wire:click="openLoanApplicationModal"
                         />
+
+                        @if (! $this->canApply && $this->loanApplicationError)
+                            <span class="text-sm text-red-500 italic">
+                                @switch($this->loanApplicationError)
+                                    @case('not_one_year')
+                                    
+                                        @break
+
+                                    @case('pending_application')
+                                        
+                                        @break
+
+                                    @case('ongoing_loan')
+                                    
+                                        @break
+
+                                    @default
+                                        You cannot apply for a loan at this time.
+                                @endswitch
+                            </span>
+                        @endif
                     </div>
                 </div>
             @elseif ($activeTab === 'loans')
@@ -556,7 +577,21 @@
                               </div>
                             </div>
                         </div>                     
-                        <h3 class="mt-4 font-semibold mb-2">Ledgers</h3>
+                         <h3 class="mt-4 font-semibold mb-2 flex justify-between items-center">
+                            <span>Ledgers</span>
+                            @if ($selectedLoan->ledgers->first()?->ledger_path)
+                                <a href="{{ asset('storage/' . $selectedLoan->ledgers->first()->ledger_path) }}"
+                                    download
+                                    class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent p-1 bg-red-500 hover:bg-red-600 text-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                    </svg>
+                                    Export as PDF
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-400 italic">No ledger PDF available</span>
+                            @endif
+                        </h3>
                         <hr class="border-red-500 mb-4">
                         <div class="flex flex-col max-w-[320px] mx-auto lg:mx-0 lg:max-w-full">
                             <div class="lg:-m-1.5 overflow-x-auto">
@@ -617,7 +652,7 @@
                                                                         id="paymentForm"
                                                                         wire:submit.prevent="save({{ $ledger->id }})"
                                                                     >
-                                                                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" x-data="{ payment_method: @entangle('payment_method') }">
+                                                                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2" x-data="{ payment_method: @entangle('payment_method'), selected_gcash_qr: @entangle('selected_gcash_qr') }">
                                                                             <x-select 
                                                                                 label="Payment Method" 
                                                                                 wire:model="payment_method" 
@@ -635,10 +670,30 @@
                                                                                 :error="$errors->first('amount')"
                                                                             />
 
-                                                                            <div x-show="payment_method === 'GCash'" class="sm:col-span-2 flex justify-center">
-                                                                                <img src="{{ asset('images/gcash-qr.jfif') }}"
-                                                                                    class="max-w-[200px] h-auto rounded-lg shadow-md mx-auto" />
+                                                                            <div x-show="payment_method === 'GCash'" class="sm:col-span-2">
+                                                                                <x-select 
+                                                                                    label="Select GCash QR"
+                                                                                    wire:model="selected_gcash_qr"
+                                                                                    placeholder="Choose QR Code"
+                                                                                >
+                                                                                    @foreach ($gcashQrs as $qr)
+                                                                                        <x-select.option 
+                                                                                            value="{{ $qr->id }}" 
+                                                                                            label="QR #{{ $qr->id }}" 
+                                                                                        />
+                                                                                    @endforeach
+                                                                                </x-select>
                                                                             </div>
+
+                                                                            <template x-if="payment_method === 'GCash' && selected_gcash_qr">
+                                                                                <div class="sm:col-span-2 flex justify-center">
+                                                                                    <img 
+                                                                                        :src="'{{ asset('storage') }}/' + 
+                                                                                            ({{ Js::from($gcashQrs->pluck('qr_path','id')) }}[selected_gcash_qr] ?? '')" 
+                                                                                        class="max-w-[200px] h-auto rounded-lg shadow-md" 
+                                                                                    />
+                                                                                </div>
+                                                                            </template>
 
                                                                             <div class="sm:col-span-2">
                                                                                 <p class="text-start font-semibold">Upload Proof of Billing</p>
@@ -668,8 +723,8 @@
                                                                         </x-slot>
                                                                     </form>
                                                                 </x-modal-card>
-                                                        @endif
-                                                    </td>                            
+                                                            @endif
+                                                        </td>                            
                                                     </tr>
                                                 @endforeach
                                             </tbody>
