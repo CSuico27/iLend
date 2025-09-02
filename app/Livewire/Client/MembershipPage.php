@@ -4,9 +4,11 @@ namespace App\Livewire\Client;
 
 use App\Models\UserProfile;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Spatie\LivewireFilepond\WithFilePond;
 
+#[Title('Membeship Application')]
 class MembershipPage extends Component
 {
     use WithFilePond;

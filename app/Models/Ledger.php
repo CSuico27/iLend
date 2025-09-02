@@ -10,7 +10,8 @@ class Ledger extends Model
         'loan_id',
         'due_date',
         'is_due',
-        'status'
+        'status',
+        'ledger_path'
     ];
     public function loan()
     {

@@ -6,9 +6,11 @@ use App\Models\CreditScore;
 use App\Models\Ledger;
 use App\Models\Loan;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -59,6 +61,8 @@ class PortalPage extends Component
     public $avatar;
 
     protected $queryString = ['activeTab'];
+    public $selected_gcash_qr;
+    public $gcashQrs = [];
 
     public function setActiveTab($tab)
     {
@@ -87,6 +91,9 @@ class PortalPage extends Component
             //for edit profile fields
             $this->phone = $this->userInfo->info->phone ?? '';
             $this->address = $this->userInfo->info->address ?? '';
+
+            //for gcash qr codes
+            $this->gcashQrs = \App\Models\Gcash::all();
 
             if ($userProfile && $userProfile->status == 'Pending') {
                 return redirect()->route('user.home')->with('portal_error', 'Your membership application is currently under review. Please wait for approval.');
@@ -167,19 +174,56 @@ class PortalPage extends Component
 
         return $userLoans->every(fn($loan) => $loan->is_finished && $loan->status !== 'Pending');
     }
+    public function getLoanApplicationErrorProperty()
+    {
+        $user = Auth::user();
 
+        $approvedAt = Carbon::parse($user->info->approved_at);
+        $diff = $approvedAt->diff(now());
+        
+        if ($diff->y < 1) {
+            return 'not_one_year';
+        }
+
+        $userLoans = $this->userLoans ?? $user->loans()->get();
+
+        if ($userLoans->isNotEmpty()) {
+        
+            if ($userLoans->contains(fn($loan) => $loan->status === 'Pending')) {
+                return 'pending_application';
+            }
+
+            if ($userLoans->contains(fn($loan) => !$loan->is_finished && $loan->status === 'Approved')) {
+                return 'ongoing_loan';
+            }
+        }
+
+        return null; 
+    }
+    public function getPopupErrorMessage()
+    {
+        $errorType = $this->loanApplicationError;
+
+        $popupMessages = [
+            'not_one_year' => 'You must be a member for at least 1 year before applying for a loan.',
+            'pending_application' => 'You already have a pending loan application. Please wait for it to be processed.',
+            'ongoing_loan' => 'You already have an ongoing loan. Please complete it before applying for a new one.',
+        ];
+
+        return $popupMessages[$errorType] ?? 'You cannot apply for a loan at this time.';
+    }
     public function openLoanApplicationModal()
     {
         if (! $this->canApply) {
             $this->notification()->error(
                 'Loan Application Blocked',
-                'You must be a member for at least 1 year and have no pending or active loans to apply for a loan.'
+                $this->getPopupErrorMessage()
             );
             return;
         }
+        
         $this->showLoanApplicationModal = true;
     }
-
     public function calculateLoan()
     {
         $loanAmount = (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? '');
@@ -403,6 +447,49 @@ class PortalPage extends Component
 
         $this->userInfo->refresh();
         $this->showProfileEditModal = false;
+    }
+
+    public function generateAndDownloadLedger($loanId)
+    {
+        try {
+            $loan = Loan::with(['user', 'ledgers.payment'])->findOrFail($loanId);
+            
+            if ($loan->user_id !== Auth::id()) {
+                $this->notification()->error('Access Denied', 'You can only download your own loan ledger.');
+                return;
+            }
+
+            $ledgers = $loan->ledgers()->orderBy('id')->get();
+            $firstLedgerId = $ledgers->first()?->id ?? 'no-ledger';
+
+            $pdf = Pdf::loadView('pdf.show-ledger', [
+                'loan' => $loan,
+                'ledgersCollection' => $loan->ledgers->values(),
+            ]);
+
+            $userName = str_replace(' ', '_', strtolower($loan->user->name));
+            $timestamp = now()->format('Ymd');
+
+            $filename = "{$firstLedgerId}_{$userName}_ledger_{$timestamp}.pdf";
+
+            $path = "ledgers/{$filename}";
+            Storage::disk('public')->put($path, $pdf->output());
+
+            $loan->update(['ledger_pdf_path' => $path]);
+
+            $this->notification()->success('PDF Generated', 'Ledger saved as: ' . $filename);
+            
+            $this->dispatch('$refresh');
+
+            return response()->streamDownload(
+                fn () => print($pdf->stream()),
+                $filename
+            );
+
+        } catch (\Exception $e) {
+            $this->notification()->error('Generation Failed', 'Unable to generate ledger PDF. Please try again.');
+            logger('Ledger generation error: ' . $e->getMessage());
+        }
     }
 
     public function render()

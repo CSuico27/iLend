@@ -438,7 +438,7 @@ class LoansManagementResource extends Resource
                                 ->success()
                                 ->send();
                         })->visible(fn ($record) => $record->status === 'Pending'),
-
+                    
                     Tables\Actions\Action::make('reject')
                         ->label('Reject')
                         ->icon('heroicon-o-x-mark')
@@ -449,6 +449,9 @@ class LoansManagementResource extends Resource
                         ->action(function ($record) {
                         
                             $record->update(['status' => 'Rejected']);
+                            Mail::to($record->user->email)->send(
+                                new LoanStatus($record, 'Rejected')
+                            );
 
                             Notification::make()
                                 ->title('Loan rejected')

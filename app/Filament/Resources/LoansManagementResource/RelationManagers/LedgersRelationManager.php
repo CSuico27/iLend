@@ -127,32 +127,46 @@ class LedgersRelationManager extends RelationManager
             ->filters([
                 //
             ])
-            ->headerActions([
+           ->headerActions([
                 Action::make('Export Ledger PDF')
-                ->label('Export as PDF')
-                ->action(function ($livewire) {
-                    $loan = $livewire->getOwnerRecord();
+                    ->label('Export as PDF')
+                    ->action(function ($livewire) {
+                        $loan = $livewire->getOwnerRecord();
 
-                    $ledgers = $loan->ledgers()->orderBy('id')->get();
-                    $firstLedgerId = $ledgers->first()?->id ?? 'no-ledger';
+                        $ledgers = $loan->ledgers()->orderBy('id')->get();
+                        // $firstLedgerId = $ledgers->first()?->id ?? 'no-ledger';
 
-                    $pdf = Pdf::loadView('pdf.show-ledger', [
-                        'loan' => $loan,
-                        'ledgersCollection' => $loan->ledgers->values(),
-                    ]);
+                        $pdf = Pdf::loadView('pdf.show-ledger', [
+                            'loan' => $loan,
+                            'ledgersCollection' => $loan->ledgers->values(),
+                        ]);
 
-                    $userName = str_replace(' ', '_', strtolower($loan->user->name));
-                    $timestamp = now()->format('Ymd');
+                        $userName = str_replace(' ', '_', strtolower($loan->user->name));
+                        $timestamp = now()->format('Ymd');
+                        $loanID = $loan->id;
 
-                    $filename = "{$firstLedgerId}_{$userName}_ledger_{$timestamp}.pdf";
+                        $filename = "{$loanID}_{$userName}_ledger_{$timestamp}.pdf";
+                        $path = "ledgers/{$filename}";
+                        
+                        Storage::disk('public')->put($path, $pdf->output());
+                        
+                        foreach ($ledgers as $ledger) {
+                            $ledger->ledger_path = $path;
+                            $ledger->save();
+                        }
 
-                    return response()->streamDownload(
-                        fn () => print($pdf->stream()),
-                        $filename
-                    );
-                })
-                ->icon('heroicon-o-arrow-down-tray')
-                ->openUrlInNewTab(),
+                        Notification::make()
+                            ->title('Ledger has been saved')
+                            ->success()
+                            ->send();
+
+                        return response()->download(
+                            storage_path("app/public/{$path}"),
+                            $filename
+                        );
+                    })
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->openUrlInNewTab(),
                 // Tables\Actions\CreateAction::make(),
             ])
             ->actions([
@@ -175,21 +189,43 @@ class LedgersRelationManager extends RelationManager
                                                     ))
                             ->stripCharacters([',']),
                         Select::make('payment_method')
-                            ->label('Payment Method')
-                            ->options([
-                                'Cash' => 'Cash',
-                                'GCash' => 'GCash',
-                                'Bank Transfer' => 'Bank Transfer',
-                            ])
-                            ->required()
-                            ->reactive(),
-                        Placeholder::make('gcash_qr')
-                            ->label('GCash QR')
-                            ->content(fn () => new HtmlString(
-                                '<img src="'.asset('images/gcash-qr.jfif').'" style="max-width: 250px; height: auto; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">'
-                            ))
-                            ->visible(fn ($get) => $get('payment_method') === 'GCash')
-                            ->extraAttributes(['class' => 'flex justify-center']),
+    ->label('Payment Method')
+    ->options([
+        'Cash' => 'Cash',
+        'GCash' => 'GCash',
+        'Bank Transfer' => 'Bank Transfer',
+    ])
+    ->required()
+    ->reactive(),
+
+Select::make('selected_gcash_qr')
+    ->label('Select GCash QR')
+    ->options(
+        \App\Models\Gcash::pluck('id')->mapWithKeys(fn ($id) => [$id => "QR #{$id}"])
+    )
+    ->visible(fn ($get) => $get('payment_method') === 'GCash')
+    ->reactive(),
+
+Placeholder::make('gcash_qr_preview')
+    ->label('')
+    ->content(function ($get) {
+        if ($get('payment_method') !== 'GCash' || !$get('selected_gcash_qr')) {
+            return '';
+        }
+
+        $qr = \App\Models\Gcash::find($get('selected_gcash_qr'));
+
+        return $qr && $qr->qr_path
+            ? new HtmlString(
+                '<img src="' . asset('storage/' . $qr->qr_path) . '" 
+                    style="max-width: 250px; height: auto; border-radius: 10px; 
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);">'
+              )
+            : '';
+    })
+    ->visible(fn ($get) => $get('payment_method') === 'GCash' && $get('selected_gcash_qr'))
+    ->extraAttributes(['class' => 'flex justify-center']),
+
                         FileUpload::make('proof_of_billing')
                             ->label('Upload Proof of Billing')
                             ->directory('proof-of-billing')
@@ -294,119 +330,145 @@ class LedgersRelationManager extends RelationManager
                     
                     TableActionGroup::make([
                         Action::make('viewPayment')
-                        ->label('View Payment')
-                        ->icon('heroicon-o-eye')
-                        ->color('info')
-                        ->visible(fn ($record) => optional($record->payment)->status === 'Pending')
-                        ->form([
-                            TextInput::make('amount')
-                                ->label('Amount')
-                                ->prefix('₱')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->formatStateUsing(fn ($record) => number_format($record->payment->amount, 2)),
-                            
-                            TextInput::make('payment_method')
-                                ->label('Payment Method')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->formatStateUsing(fn ($record) => $record->payment->payment_method),
-                            
-                            TextInput::make('date_received')
-                                ->label('Date Received')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->formatStateUsing(fn ($record) => Carbon::parse($record->payment->date_received)->format('F j, Y')),
-                            
-                            TextInput::make('status')
-                                ->label('Payment Status')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->formatStateUsing(fn ($record) => ucfirst($record->payment->status)),
-                            
-                            FileUpload::make('proof_of_billing')
-                                ->label('Proof of Billing')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->default(fn ($record) => $record->payment->proof_of_billing ? [$record->payment->proof_of_billing] : [])
-                                ->openable(),
-                        ])
+                            ->label('View Payment')
+                            ->icon('heroicon-o-eye')
+                            ->color('info')
+                            ->visible(fn ($record) => optional($record->payment)->status === 'Pending')
+                            ->form([
+                                TextInput::make('amount')
+                                    ->label('Amount')
+                                    ->prefix('₱')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(fn ($record) => number_format($record->payment->amount, 2)),
+
+                                TextInput::make('payment_method')
+                                    ->label('Payment Method')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(fn ($record) => $record->payment->payment_method),
+
+                                TextInput::make('date_received')
+                                    ->label('Date Received')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(fn ($record) => Carbon::parse($record->payment->date_received)->format('F j, Y')),
+
+                                TextInput::make('status')
+                                    ->label('Payment Status')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->formatStateUsing(fn ($record) => ucfirst($record->payment->status)),
+
+                                FileUpload::make('proof_of_billing')
+                                    ->label('Proof of Billing')
+                                    ->disabled()
+                                    ->dehydrated(false)
+                                    ->default(fn ($record) => $record->payment->proof_of_billing ? [$record->payment->proof_of_billing] : [])
+                                    ->openable(),
+                            ])
                             ->modalHeading('View Payment Details')
                             ->modalWidth('2xl')
-                            ->modalSubmitAction(false)
-                            ->modalCancelActionLabel('Close'),
-                        Action::make('approvePayment')
-                            ->label('Approve')
-                            ->icon('heroicon-o-check-circle')
-                            ->color('success')
-                            ->visible(fn ($record) => optional($record->payment)->status === 'Pending' && $record->status === 'Pending')
-                            ->requiresConfirmation()
-                            ->action(function ($record) {
-                                $payment = $record->payment;
+                            ->modalSubmitAction(false)  
+                            ->modalCancelAction(false)   
+                            ->extraModalFooterActions(fn($record) => [
+                                Action::make('close')
+                                    ->label('Close')
+                                    ->color('gray')
+                                    ->after(fn ($record) => redirect()->route(
+                                'filament.admin.resources.loans-managements.edit',
+                                ['record' => $record->loan_id] 
+                                    )),
+                                Action::make('approve')
+                                    ->label('Approve')
+                                    ->icon('heroicon-o-check-circle')
+                                    ->color('success')
+                                    ->extraAttributes(['class' => 'ml-auto'])
+                                    ->visible(fn() => $record->payment?->status === 'Pending')
+                                    ->action(function ($record) {
+                                        $payment = $record->payment;
 
-                                $pdf = Pdf::loadView('pdf.receipt', [
-                                    'ledger' => $record,
-                                    'loan' => $record->loan,
-                                    'user' => $record->loan->user,
-                                    'payment' => $payment,
-                                ]);
+                                        $pdf = Pdf::loadView('pdf.receipt', [
+                                            'ledger' => $record,
+                                            'loan'   => $record->loan,
+                                            'user'   => $record->loan->user,
+                                            'payment'=> $payment,
+                                        ]);
 
-                                $userName = str_replace(' ', '_', strtolower($record->loan->user->name));
-                                $paymentDate = Carbon::parse($payment->date_received)->format('Ymd');
-                                $receiptFileName = "{$payment->id}_receipt_{$userName}_{$paymentDate}.pdf";
-                                $receiptPath = 'receipts/' . $receiptFileName;
+                                        $userName = str_replace(' ', '_', strtolower($record->loan->user->name));
+                                        $paymentDate = Carbon::parse($payment->date_received)->format('Ymd');
+                                        $receiptFileName = "{$payment->id}_receipt_{$userName}_{$paymentDate}.pdf";
+                                        $receiptPath = 'receipts/' . $receiptFileName;
 
-                                Storage::disk('public')->put($receiptPath, $pdf->output());
+                                        Storage::disk('public')->put($receiptPath, $pdf->output());
 
-                                $payment->update([
-                                    'status' => 'Approved',
-                                    'receipt' => $receiptPath,
-                                ]);
+                                        $payment->update([
+                                            'status' => 'Approved',
+                                            'receipt' => $receiptPath,
+                                        ]);
 
-                                $record->update(['status' => 'Paid']);
+                                        $record->update(['status' => 'Paid']);
+                                        $this->updateLoanFinishedStatus($record->loan);
 
-                                $this->updateLoanFinishedStatus($record->loan);
+                                        Mail::to($record->loan->user->email)->send(
+                                            new PaymentStatus($record->payment, 'Approved')
+                                        );
 
-                                Mail::to($record->loan->user->email)->send(
-                                    new PaymentStatus($record->payment, 'Approved')
-                                );
+                                        Notification::make()
+                                            ->title('Payment Approved')
+                                            ->success()
+                                            ->send();
+                                    })
+                                    ->after(fn ($record) => redirect()->route(
+                                'filament.admin.resources.loans-managements.edit',
+                                ['record' => $record->loan_id] 
+                                    )),
 
-                                Notification::make()
-                                    ->title('Payment Approved')
-                                    ->success()
-                                    ->send();
-                            }),
-                        Action::make('rejectPayment')
-                            ->label('Reject')
-                            ->icon('heroicon-o-x-circle')
-                            ->color('danger')
-                            ->visible(fn ($record) => optional($record->payment)->status === 'Pending' && $record->status === 'Pending')
-                            ->requiresConfirmation()
-                            ->action(function ($record) {
-                                $payment = $record->payment;
-                                $payment->update([
-                                    // 'payment_method' => 'Cash',
-                                    'receipt' => null,
-                                    'status' => 'Rejected',
-                                    'proof_of_billing' => null,
-                                ]);
-                                $record->update(['status' => 'Pending']);
+                                Action::make('reject')
+                                    ->label('Reject')
+                                    ->icon('heroicon-o-x-circle')
+                                    ->color('danger')
+                                    ->visible(fn() => $record->payment?->status === 'Pending')
+                                    ->requiresConfirmation()
+                                    ->action(function ($record) {
+                                        $payment = $record->payment;
+                                        $payment->update([
+                                            'receipt' => null,
+                                            'status' => 'Rejected',
+                                            'proof_of_billing' => null,
+                                        ]);
+                                        $record->update(['status' => 'Pending']);
 
-                                Mail::to($record->loan->user->email)->send(
-                                    new PaymentStatus($payment, 'Rejected')
-                                );
+                                        Mail::to($record->loan->user->email)->send(
+                                            new PaymentStatus($payment, 'Rejected')
+                                        );
 
-                                Notification::make()
-                                    ->title('Payment Rejected')
-                                    ->danger()
-                                    ->send();
-                            }),
-                        Action::make('downloadReceipt')
-                            ->label('Receipt')
-                            ->icon('heroicon-o-arrow-down-tray')
-                            ->color('primary')
-                            ->visible(fn ($record) => optional($record->payment)->status === 'Approved' && optional($record->payment)->receipt && $record->status === 'Paid')
-                            ->action(function ($record) {
+                                        Notification::make()
+                                            ->title('Payment Rejected')
+                                            ->danger()
+                                            ->send();
+                                    })
+                                    ->after(fn ($record) => redirect()->route(
+                                'filament.admin.resources.loans-managements.edit',
+                                ['record' => $record->loan_id] 
+                                    )),
+                            ])
+
+                    ]),
+                   
+                    // ->visible(function ($record) {
+                    //     $approveVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
+                    //     $rejectVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
+                    //     $downloadVisible = optional($record->payment)->status === 'Approved' && optional($record->payment)->receipt && $record->status === 'Paid';
+
+                    //     return $approveVisible || $rejectVisible || $downloadVisible;
+                    // })
+                    Action::make('downloadReceipt')
+                        ->label('Download Receipt')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('primary')
+                        ->visible(fn ($record) => $record->status === 'Paid' && optional($record->payment)->receipt)
+                        ->action(function ($record) {
                             $receiptPath = optional($record->payment)->receipt;
 
                             if ($receiptPath && Storage::disk('public')->exists($receiptPath)) {
@@ -416,43 +478,8 @@ class LedgersRelationManager extends RelationManager
                                     $filename
                                 );
                             }
-                            Notification::make()
-                                ->title('Receipt not found')
-                                ->danger()
-                                ->send();
                         })
-                        ->visible(fn ($record) =>
-                            optional($record->payment)->status === 'Approved' &&
-                            optional($record->payment)->receipt &&
-                            $record->status === 'Paid'
-                        )
-                        ->openUrlInNewTab(),
-                    ])
-                   
-                    // ->visible(function ($record) {
-                    //     $approveVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
-                    //     $rejectVisible = optional($record->payment)->status === 'Pending' && $record->status === 'Pending';
-                    //     $downloadVisible = optional($record->payment)->status === 'Approved' && optional($record->payment)->receipt && $record->status === 'Paid';
-
-                    //     return $approveVisible || $rejectVisible || $downloadVisible;
-                    // })
-                    // Action::make('downloadReceipt')
-                    //     ->label('Receipt')
-                    //     ->icon('heroicon-o-arrow-down-tray')
-                    //     ->color('primary')
-                    //     ->visible(fn ($record) => $record->status === 'Paid' && optional($record->payment)->receipt)
-                    //     ->action(function ($record) {
-                    //         $receiptPath = optional($record->payment)->receipt;
-
-                    //         if ($receiptPath && Storage::disk('public')->exists($receiptPath)) {
-                    //             $filename = basename($receiptPath);
-                    //             return response()->streamDownload(
-                    //                 fn () => print(Storage::disk('public')->get($receiptPath)),
-                    //                 $filename
-                    //             );
-                    //         }
-                    //     })
-                    //     ->openUrlInNewTab()
+                        ->openUrlInNewTab()
                 // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DeleteAction::make(),
             ])

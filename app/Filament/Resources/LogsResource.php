@@ -24,7 +24,7 @@ class LogsResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clock';
     protected static ?string $pluralModelLabel = 'Audit Trails'; 
     protected static ?string $navigationLabel = 'Logs';
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 7;
     public static function canCreate(): bool
     {
         return false;
