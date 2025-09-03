@@ -72,7 +72,8 @@ class LedgersRelationManager extends RelationManager
             ->recordTitleAttribute('loan')
             ->columns([
                 TextColumn::make('id') 
-                    ->label('Ledger ID'),
+                    ->label('Ledger ID')
+                    ->searchable(),
                 TextColumn::make('loan.user.info.member_id')
                     ->label('Member ID'),
                 TextColumn::make('loan.user.name')
