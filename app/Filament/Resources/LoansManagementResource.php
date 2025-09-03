@@ -375,9 +375,14 @@ class LoansManagementResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('id') 
-                    ->label('Loan ID'),
+                    ->label('Loan ID')
+                    ->searchable(),
+                TextColumn::make('user.info.member_id')
+                    ->label('Member ID')
+                    ->searchable(),
                 TextColumn::make('user.name') 
-                    ->label('Applicant'),
+                    ->label('Applicant')
+                    ->searchable(),
                 TextColumn::make('loan_amount')
                     ->label('Requested Loan')
                     ->money('PHP'),
