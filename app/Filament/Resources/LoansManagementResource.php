@@ -374,6 +374,8 @@ class LoansManagementResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('id') 
+                    ->label('Loan ID'),
                 TextColumn::make('user.name') 
                     ->label('Applicant'),
                 TextColumn::make('loan_amount')
@@ -414,6 +416,7 @@ class LoansManagementResource extends Resource
             ])
             ->recordAction(null)
             ->recordUrl(null)
+            ->defaultSort('id', 'desc')
             ->filters([
                 // 
             ])
@@ -477,9 +480,10 @@ class LoansManagementResource extends Resource
                                     return;
                                 }
 
-                                $record->update([
-                                    'status' => 'Approved',
-                                ]);
+                                $record->update(['status' => 'Approved',]);
+                                Mail::to($record->user->email)->send(
+                                 new LoanStatus($record, 'Approved')
+                                );
 
                                 Notification::make()
                                     ->title('Loan Approved')

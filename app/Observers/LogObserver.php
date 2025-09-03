@@ -25,6 +25,12 @@ class LogObserver
         }
 
         $this->storeLog('Created', $model, $changes);
+
+        if ($model instanceof \App\Models\Payment) {
+            $this->createPaymentNotification($model);
+        }
+
+        $this->storeLog('Created', $model);
     }
 
     public function updated($model): void
@@ -99,6 +105,15 @@ class LogObserver
             'status'    => $changes['status'] ?? $model->status ?? null,
             'loan_id'   => $loanId,
             'ledger_id' => $ledgerId
+        ]);
+    }
+    protected function createPaymentNotification($payment): void
+    {
+         $userName = $payment->ledger->loan->user?->name ?? 'Unknown User';
+
+        \App\Models\Notifications::create([
+            'message' => "{$userName} has made a payment of ₱{$payment->amount} for Ledger ID: {$payment->ledger->id} under Loan ID: {$payment->ledger->loan_id}.",
+            'is_read' => false,
         ]);
     }
 }

@@ -12,26 +12,26 @@ class StatsOverview extends BaseWidget
 {
     protected function getStats(): array
     {
-        $daysInMonth = now()->daysInMonth; // full month, not just current day
+        $daysInMonth = now()->daysInMonth; 
 
         $generateWaveChart = function (int $totalCount, int $days = 30): array {
-            if ($totalCount === 0) {
-                return array_fill(0, $days, 0); // keep chart flat at 0 if no data
-            }
+        if ($totalCount === 0) {
+            return array_fill(0, $days, 0); 
+        }
 
-            return collect(range(1, $days))->map(function ($day) use ($totalCount, $days) {
-                // base sine wave
-                $wave = sin($day / $days * 2 * pi());
+        $minAmplitude = 3; 
 
-                // normalize: value between 0 and 1
-                $normalized = 0.5 + 0.5 * $wave;
+        return collect(range(1, $days))->map(function ($day) use ($totalCount, $days, $minAmplitude) {
+            
+            $wave = sin($day / $days * 2 * pi());
 
-                // scale height depending on actual total count
-                $scaled = $normalized * $totalCount;
+            $normalized = 0.5 + 0.5 * $wave;
 
-                return round($scaled, 2);
-            })->toArray();
-        };
+            $scaled = $normalized * max($totalCount, $minAmplitude);
+
+            return round($scaled, 2);
+        })->toArray();
+    };
 
         $pendingCount = UserProfile::where('is_applied_for_membership', 1)
             ->where('status', 'Pending')
@@ -65,7 +65,9 @@ class StatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-banknotes', IconPosition::Before)
                 ->color('info')
                 ->chart($generateWaveChart($loanCount, $daysInMonth))
-                ->url(route('filament.admin.resources.loans-managements.index')),
+                ->url(route('filament.admin.resources.loans-managements.index', [
+                    'activeTab' => 'Approved',
+                ])),
         ];
     }
 }

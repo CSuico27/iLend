@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Loan extends Model
 {
@@ -37,6 +39,7 @@ class Loan extends Model
         //when loan is created
         static::created(function ($loan) {
             $loan->generateLedgers();
+            $loan->generateLedgerPdf();
         });
 
         //when updating something in the loan
@@ -45,9 +48,39 @@ class Loan extends Model
                 $loan->recomputeLoan();
                 $loan->ledgers()->delete(); 
                 $loan->generateLedgers();   
+                $loan->generateLedgerPdf();
             }
         });
     }
+
+    public function generateLedgerPdf()
+    {
+        $ledgers = $this->ledgers()->orderBy('id')->get();
+
+        if ($ledgers->isEmpty()) {
+            return;
+        }
+
+        $pdf = Pdf::loadView('pdf.show-ledger', [
+            'loan' => $this,
+            'ledgersCollection' => $ledgers,
+        ]);
+
+        $userName = str_replace(' ', '_', strtolower($this->user->name));
+        $timestamp = now()->format('Ymd');
+        $loanID = $this->id;
+
+        $filename = "{$loanID}_{$userName}_ledger_{$timestamp}.pdf";
+        $path = "ledgers/{$filename}";
+
+        Storage::disk('public')->put($path, $pdf->output());
+
+        foreach ($ledgers as $ledger) {
+            $ledger->ledger_path = $path;
+            $ledger->save();
+        }
+    }
+
 
     public function generateLedgers()
     {
@@ -92,15 +125,15 @@ class Loan extends Model
         $rate = $this->interest_rate / 100;
         $term = $this->loan_term;
 
-        $interestAmount = $principal * $rate * $term;
-        $totalPayment = $principal + $interestAmount;
+        $interestAmount = $principal * $rate;
+        $totalPayment   = $principal + $interestAmount;
 
         $paymentCount = match ($this->payment_frequency) {
-            'daily' => $term * 30,
-            'weekly' => round($term * 4.33),
+            'daily'    => $term * 30,
+            'weekly'   => round($term * 4.33),
             'biweekly' => round($term * 2.17),
-            'monthly' => $term,
-            default => 0,
+            'monthly'  => $term,
+            default    => 0,
         };
 
         $paymentPerTerm = $paymentCount > 0 ? $totalPayment / $paymentCount : 0;
