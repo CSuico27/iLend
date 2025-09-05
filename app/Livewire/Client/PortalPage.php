@@ -93,7 +93,7 @@ class PortalPage extends Component
             $this->address = $this->userInfo->info->address ?? '';
 
             //for gcash qr codes
-            $this->gcashQrs = \App\Models\Gcash::all();
+            $this->gcashQrs = \App\Models\gcash::all();
 
             if ($userProfile && $userProfile->status == 'Pending') {
                 return redirect()->route('user.home')->with('portal_error', 'Your membership application is currently under review. Please wait for approval.');
@@ -200,30 +200,46 @@ class PortalPage extends Component
 
         return null; 
     }
-    public function getPopupErrorMessage()
+    public function getPopupErrorData()
     {
         $errorType = $this->loanApplicationError;
 
-        $popupMessages = [
-            'not_one_year' => 'You must be a member for at least 1 year before applying for a loan.',
-            'pending_application' => 'You already have a pending loan application. Please wait for it to be processed.',
-            'ongoing_loan' => 'You already have an ongoing loan. Please complete it before applying for a new one.',
+        $popupData = [
+            'not_one_year' => [
+                'title' => 'Membership Requirement',
+                'message' => 'You must be a member for at least 1 year before applying for a loan.',
+            ],
+            'pending_application' => [
+                'title' => 'Pending Application',
+                'message' => 'You already have a pending loan application. Please wait for it to be processed.',
+            ],
+            'ongoing_loan' => [
+                'title' => 'Ongoing Loan',
+                'message' => 'You already have an ongoing loan. Please complete it before applying for a new one.',
+            ],
         ];
 
-        return $popupMessages[$errorType] ?? 'You cannot apply for a loan at this time.';
+        return $popupData[$errorType] ?? [
+            'title' => 'Loan Application Blocked',
+            'message' => 'You cannot apply for a loan at this time.',
+        ];
     }
+
     public function openLoanApplicationModal()
     {
         if (! $this->canApply) {
+            $popup = $this->getPopupErrorData();
+
             $this->notification()->error(
-                'Loan Application Blocked',
-                $this->getPopupErrorMessage()
+                $popup['title'],
+                $popup['message']
             );
             return;
         }
-        
+
         $this->showLoanApplicationModal = true;
     }
+
     public function calculateLoan()
     {
         $loanAmount = (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? '');

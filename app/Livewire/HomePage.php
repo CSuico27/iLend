@@ -35,6 +35,15 @@ class HomePage extends Component
         }
     }
 
+    public function applicationUnderReview(){
+        
+        $this->notification()->info(
+            $title = 'Under Review',
+            $description = 'Your membership application is currently under review. Please wait for approval.'
+        );
+           
+    }
+    
     public function render()
     {
         return view('livewire.home-page');
