@@ -4,7 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GcashResource\Pages;
 use App\Filament\Resources\GcashResource\RelationManagers;
-use App\Models\Gcash;
+use App\Models\gcash;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
@@ -19,9 +19,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class GcashResource extends Resource
 {
-    protected static ?string $model = Gcash::class;
+    protected static ?string $model = gcash::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-qr-code';
     protected static ?string $navigationLabel = 'GCash QR';
     protected static ?string $pluralModelLabel = 'GCash QR';
      protected static ?int $navigationSort = 5;

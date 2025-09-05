@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\LoansManagementResource\RelationManagers;
 
 use App\Mail\PaymentStatus;
+use App\Models\gcash;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Filament\Actions\ActionGroup;
@@ -192,42 +193,42 @@ class LedgersRelationManager extends RelationManager
                                                     ))
                             ->stripCharacters([',']),
                         Select::make('payment_method')
-    ->label('Payment Method')
-    ->options([
-        'Cash' => 'Cash',
-        'GCash' => 'GCash',
-        'Bank Transfer' => 'Bank Transfer',
-    ])
-    ->required()
-    ->reactive(),
+                            ->label('Payment Method')
+                            ->options([
+                                'Cash' => 'Cash',
+                                'GCash' => 'GCash',
+                                'Bank Transfer' => 'Bank Transfer',
+                            ])
+                            ->required()
+                            ->reactive(),
 
-Select::make('selected_gcash_qr')
-    ->label('Select GCash QR')
-    ->options(
-        \App\Models\Gcash::pluck('id')->mapWithKeys(fn ($id) => [$id => "QR #{$id}"])
-    )
-    ->visible(fn ($get) => $get('payment_method') === 'GCash')
-    ->reactive(),
+                        Select::make('selected_gcash_qr')
+                            ->label('Select GCash QR')
+                            ->options(
+                                gcash::pluck('id')->mapWithKeys(fn ($id) => [$id => "QR #{$id}"])
+                            )
+                            ->visible(fn ($get) => $get('payment_method') === 'GCash')
+                            ->reactive(),
 
-Placeholder::make('gcash_qr_preview')
-    ->label('')
-    ->content(function ($get) {
-        if ($get('payment_method') !== 'GCash' || !$get('selected_gcash_qr')) {
-            return '';
-        }
+                        Placeholder::make('gcash_qr_preview')
+                            ->label('')
+                            ->content(function ($get) {
+                                if ($get('payment_method') !== 'GCash' || !$get('selected_gcash_qr')) {
+                                    return '';
+                                }
 
-        $qr = \App\Models\Gcash::find($get('selected_gcash_qr'));
+                                $qr = gcash::find($get('selected_gcash_qr'));
 
-        return $qr && $qr->qr_path
-            ? new HtmlString(
-                '<img src="' . asset('storage/' . $qr->qr_path) . '" 
-                    style="max-width: 250px; height: auto; border-radius: 10px; 
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.2);">'
-              )
-            : '';
-    })
-    ->visible(fn ($get) => $get('payment_method') === 'GCash' && $get('selected_gcash_qr'))
-    ->extraAttributes(['class' => 'flex justify-center']),
+                                return $qr && $qr->qr_path
+                                    ? new HtmlString(
+                                        '<img src="' . asset('storage/' . $qr->qr_path) . '" 
+                                            style="max-width: 250px; height: auto; border-radius: 10px; 
+                                            box-shadow: 0 4px 6px rgba(0,0,0,0.2);">'
+                                    )
+                                    : '';
+                            })
+                            ->visible(fn ($get) => $get('payment_method') === 'GCash' && $get('selected_gcash_qr'))
+                            ->extraAttributes(['class' => 'flex justify-center']),
 
                         FileUpload::make('proof_of_billing')
                             ->label('Upload Proof of Billing')

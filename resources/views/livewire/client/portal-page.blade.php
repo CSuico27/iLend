@@ -71,18 +71,18 @@
         <div class="mt-3">
             @if ($activeTab === 'dashboard')
                 <div class="w-full h-auto pb-5 space-y-4">
-                    <div class="flex justify-end">
-                        <x-modal-card title="Loan Application" wire:model="showLoanApplicationModal">
-                            <form id="loanApplicationForm" wire:submit.prevent="submitLoanApplication" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div class="sm:col-span-2">
-                                    <x-input label="Borrower's Name" placeholder="Your full name" wire:model="user_name" readonly />
-                                    <x-select label="Loan Type" wire:model.live="loan_type" placeholder="Enter loan type">
+                    <div class="flex justify-end w-full">
+                        <x-modal-card title="Loan Application" wire:model="showLoanApplicationModal" width="3xl">
+                            <form id="loanApplicationForm" wire:submit.prevent="submitLoanApplication" class="grid grid-cols-1 sm:grid-cols-2 gap-4 space-y-2">
+                                <div class="sm:col-span-2 space-y-3 text-sm">
+                                    <x-input label="Borrower's Name / Pangalan ng Umutang" placeholder="Your full name" wire:model="user_name" readonly />
+                                    <x-select label="Loan Type / Uri ng Loan" wire:model.live="loan_type" placeholder="Enter loan type">
                                         <x-select.option label="Regular Loan" value="regular" />
                                         <x-select.option label="Emergency Loan" value="emergency" />
                                         <x-select.option label="Car Loan" value="car" />
                                     </x-select>
                                     <x-currency
-                                        label="Loan Amount"
+                                        label="Loan Amount / Halagang Hiniram"
                                         placeholder="Enter loan amount"
                                         wire:model.live="loan_amount"
                                         prefix="₱"
@@ -93,25 +93,25 @@
                                         wire:model.live="interest_rate"
                                         readonly
                                     /> --}}
-                                    <x-select label="Loan Term" wire:model.live="loan_term" placeholder="Enter loan term">
-                                        <x-select.option label="3 Months" value="3" />
-                                        <x-select.option label="6 Months" value="6" />
-                                        <x-select.option label="9 Months" value="9" />
-                                        <x-select.option label="12 Months" value="12" />
-                                        <x-select.option label="24 Months" value="24" />
+                                    <x-select label="Loan Term / Tagal ng Buwan" wire:model.live="loan_term" placeholder="Enter loan term">
+                                        <x-select.option label="3 Months / Tatlong Buwan" value="3" />
+                                        <x-select.option label="6 Months / Anim na Buwan" value="6" />
+                                        <x-select.option label="9 Months / Siyam na Buwan" value="9" />
+                                        <x-select.option label="12 Months / Labindalawang Buwan" value="12" />
+                                        <x-select.option label="24 Months / Dalawampu't apat na Buwan" value="24" />
                                     </x-select>
                                 </div>
                                 
-                                <x-radio id="daily" label="Daily" wire:model.live="payment_frequency" value="daily" />
-                                <x-radio id="weekly" label="Weekly" wire:model.live="payment_frequency" value="weekly" />
-                                <x-radio id="biweekly" label="Biweekly" wire:model.live="payment_frequency" value="biweekly" />
-                                <x-radio id="monthly" label="Monthly" wire:model.live="payment_frequency" value="monthly" />
-                                <x-input label="First Payment Date" placeholder="First payment date" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
-                                <x-input label="Last Payment Date" placeholder="Last payment date" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
-                                <x-input label="Total Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly />
-                                <x-input label="Total Loan Payable" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
-                                <div class="sm:col-span-2 w-full">
-                                    <x-input label="Payment Per Term" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly/>
+                                <x-radio id="daily" label="Daily / Araw-araw" wire:model.live="payment_frequency" value="daily" />
+                                <x-radio id="weekly" label="Weekly / Linguhan" wire:model.live="payment_frequency" value="weekly" />
+                                <x-radio id="biweekly" label="Biweekly / Ikalawang Linggo" wire:model.live="payment_frequency" value="biweekly" />
+                                <x-radio id="monthly" label="Monthly / Buwanan" wire:model.live="payment_frequency" value="monthly" />
+                                <x-input label="First Payment Date / Date ng Unang Bayad" placeholder="First payment date" :value="$start_date ? \Carbon\Carbon::parse($start_date)->format('F d, Y') : ''" readonly/>
+                                <x-input label="Last Payment Date / Date ng Huling Bayad" placeholder="Last payment date" :value="$end_date ? \Carbon\Carbon::parse($end_date)->format('F d, Y') : ''" readonly />
+                                {{-- <x-input label="Total Interest / Kabuuang Interest" placeholder="Total Interest" :value="number_format($interest_amount, 2)" readonly /> --}}
+                                <div class="sm:col-span-2 w-full space-y-3">
+                                    <x-input label="Total Loan Payable / Kabuuang Babayaran" placeholder="Total Loan Payable" :value="number_format($total_payment, 2)" readonly />
+                                    <x-input label="Payment Per Term / Halagang Babayaran kada Hulugan" placeholder="Payment Per Term" :value="number_format($payment_per_term, 2)" readonly/>
                                 </div>
                             </form>
                             <x-slot name="footer" class="flex justify-between gap-x-4">
