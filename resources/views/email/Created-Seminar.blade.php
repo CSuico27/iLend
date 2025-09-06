@@ -8,6 +8,7 @@
     <li><strong>Title:</strong> {{ $seminar->title }}</li>
     <li><strong>Date:</strong> {{ \Carbon\Carbon::parse($seminar->seminar_date)->format('F j, Y') }}</li>
     <li><strong>Time:</strong> {{ \Carbon\Carbon::parse($seminar->start_time)->format('h:i A') }} - {{ \Carbon\Carbon::parse($seminar->end_time)->format('h:i A') }}</li>
+    <li><strong>Description:</strong> {{ $seminar->details ?? 'N/A' }}</li>
 </ul>
 
 @if (!empty($emailBody))
