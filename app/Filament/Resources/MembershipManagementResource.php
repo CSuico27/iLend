@@ -62,11 +62,11 @@ class MembershipManagementResource extends Resource
                             ->schema([
                                 TextInput::make('name')->label('Full Name')->required(),
                                 TextInput::make('email')->email()->required()->unique(),
-                                TextInput::make('password')
-                                    ->password()
-                                    ->revealable()
-                                    ->dehydrateStateUsing(fn($state) => $state ? bcrypt($state) : null)
-                                    ->required(fn(string $context) => $context === 'create'),
+                                // TextInput::make('password')
+                                //     ->password()
+                                //     ->revealable()
+                                //     ->dehydrateStateUsing(fn($state) => $state ? bcrypt($state) : null)
+                                //     ->required(fn(string $context) => $context === 'create'),
                             ]),
                         Tab::make('Member Info')
                             ->schema([
@@ -110,8 +110,17 @@ class MembershipManagementResource extends Resource
                                                                 'Not Specified' => 'Not Specified',
                                                             ])
                                                             ->required(),
-                                                        TextInput::make('address')
-                                                            ->label('Address')
+                                                        TextInput::make('region')
+                                                            ->label('Region')
+                                                            ->required(),
+                                                        TextInput::make('province')
+                                                            ->label('Province')
+                                                            ->required(),
+                                                        TextInput::make('municipality')
+                                                            ->label('Municipality')
+                                                            ->required(),
+                                                        TextInput::make('barangay')
+                                                            ->label('Barangay')
                                                             ->required(),
                                                     ]),
                                                 Tab::make('Requirements')
@@ -279,7 +288,10 @@ class MembershipManagementResource extends Resource
                                         'phone' => null,
                                         'birthdate' => null,
                                         'gender' => null,
-                                        'address' => null,
+                                        'region' => null,
+                                        'province' => null,
+                                        'municipality' => null,
+                                        'barangay' => null,
                                         'biodata' => null,
                                         'brgy_clearance' => null,
                                         'valid_id' => null,

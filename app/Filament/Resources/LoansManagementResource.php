@@ -31,6 +31,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\Relationship;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Interest;
 
 class LoansManagementResource extends Resource
 {
@@ -233,9 +234,12 @@ class LoansManagementResource extends Resource
 
                         TextInput::make('interest_rate')
                             ->label('Interest Rate (%)')
+                            ->default(fn () => Interest::latestRate())
                             ->numeric()
                             ->required()
                             ->reactive()
+                            ->disabled()
+                            ->dehydrated(true)
                             ->afterStateUpdated(fn (Set $set, Get $get) => self::updateCalculatedLoanFields($set, $get)),
 
                         Select::make('loan_term')
@@ -427,77 +431,77 @@ class LoansManagementResource extends Resource
             ])
             ->actions([
                 ActionGroup::make([
-                    // Tables\Actions\Action::make('approve')
-                    //     ->label('Approve')
-                    //     ->icon('heroicon-o-check')
-                    //     ->color('success')
-                    //     ->requiresConfirmation()
-                    //     ->modalIcon('heroicon-o-check')
-                    //     ->modalDescription('Are you sure you want to approve this application?')
-                    //     ->action(function ($record) {
+                    Tables\Actions\Action::make('approve')
+                        ->label('Approve')
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalIcon('heroicon-o-check')
+                        ->modalDescription('Are you sure you want to approve this application?')
+                        ->action(function ($record) {
                         
-                    //         $record->update(['status' => 'Approved']);
-                    //         Mail::to($record->user->email)->send(
-                    //             new LoanStatus($record, 'Approved')
-                    //         );
-
-                    //         Notification::make()
-                    //             ->title('Loan approved')
-                    //             ->success()
-                    //             ->send();
-                    //     })->visible(fn ($record) => $record->status === 'Pending'),
-                    Tables\Actions\Action::make('setInterestRate')
-                        ->label('Set Interest Rate')
-                        ->icon('heroicon-o-currency-dollar')
-                        ->color('warning')
-                        ->form([
-                            TextInput::make('interest_rate')
-                                ->label('Interest Rate (%)')
-                                ->numeric()
-                                ->required()
-                                ->minValue(1)
-                                ->maxValue(100)
-                                ->suffix('%'),
-                        ])
-                        ->action(function ($record, array $data) {
-                            $record->update([
-                                'interest_rate' => $data['interest_rate'],
-                            ]);
-
-                            $record->recomputeLoan();
+                            $record->update(['status' => 'Approved']);
+                            Mail::to($record->user->email)->send(
+                                new LoanStatus($record, 'Approved')
+                            );
 
                             Notification::make()
-                                ->title('Interest rate set to ' . $data['interest_rate'] . '%')
+                                ->title('Loan approved')
                                 ->success()
                                 ->send();
-                        })
-                        ->visible(fn ($record) => $record->status === 'Pending'),
-                        Tables\Actions\Action::make('approve')
-                            ->label('Approve')
-                            ->visible(fn ($record) => $record->status === 'Pending')
-                            ->action(function ($record) {
-                                if ($record->interest_rate == 0) {
-                                    Notification::make()
-                                        ->title('Interest Rate Required')
-                                        ->body('Please set an interest rate before approving this loan.')
-                                        ->danger()
-                                        ->send();
-                                    return;
-                                }
+                        })->visible(fn ($record) => $record->status === 'Pending'),
+                    // Tables\Actions\Action::make('setInterestRate')
+                    //     ->label('Set Interest Rate')
+                    //     ->icon('heroicon-o-currency-dollar')
+                    //     ->color('warning')
+                    //     ->form([
+                    //         TextInput::make('interest_rate')
+                    //             ->label('Interest Rate (%)')
+                    //             ->numeric()
+                    //             ->required()
+                    //             ->minValue(1)
+                    //             ->maxValue(100)
+                    //             ->suffix('%'),
+                    //     ])
+                    //     ->action(function ($record, array $data) {
+                    //         $record->update([
+                    //             'interest_rate' => $data['interest_rate'],
+                    //         ]);
 
-                                $record->update(['status' => 'Approved',]);
-                                Mail::to($record->user->email)->send(
-                                 new LoanStatus($record, 'Approved')
-                                );
+                    //         $record->recomputeLoan();
 
-                                Notification::make()
-                                    ->title('Loan Approved')
-                                    ->success()
-                                    ->send();
-                            })
-                            ->requiresConfirmation()
-                            ->color('success')
-                            ->icon('heroicon-o-check-circle'),
+                    //         Notification::make()
+                    //             ->title('Interest rate set to ' . $data['interest_rate'] . '%')
+                    //             ->success()
+                    //             ->send();
+                    //     })
+                    //     ->visible(fn ($record) => $record->status === 'Pending'),
+                        // Tables\Actions\Action::make('approve')
+                        //     ->label('Approve')
+                        //     ->visible(fn ($record) => $record->status === 'Pending')
+                        //     ->action(function ($record) {
+                        //         if ($record->interest_rate == 0) {
+                        //             Notification::make()
+                        //                 ->title('Interest Rate Required')
+                        //                 ->body('Please set an interest rate before approving this loan.')
+                        //                 ->danger()
+                        //                 ->send();
+                        //             return;
+                        //         }
+
+                        //         $record->update(['status' => 'Approved',]);
+                        //         Mail::to($record->user->email)->send(
+                        //          new LoanStatus($record, 'Approved')
+                        //         );
+
+                        //         Notification::make()
+                        //             ->title('Loan Approved')
+                        //             ->success()
+                        //             ->send();
+                        //     })
+                        //     ->requiresConfirmation()
+                        //     ->color('success')
+                        //     ->icon('heroicon-o-check-circle'),
 
 
                     Tables\Actions\Action::make('reject')

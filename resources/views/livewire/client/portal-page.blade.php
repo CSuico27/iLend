@@ -87,12 +87,13 @@
                                         wire:model.live="loan_amount"
                                         prefix="₱"
                                     />
-                                    {{-- <x-number
+                                    <x-input
                                         label="Interest Rate"
-                                        placeholder="0"
+                                        placeholder="Interest Rate"
                                         wire:model.live="interest_rate"
+                                        prefix="%"
                                         readonly
-                                    /> --}}
+                                    />
                                     <x-select label="Loan Term / Tagal ng Buwan" wire:model.live="loan_term" placeholder="Enter loan term">
                                         <x-select.option label="3 Months / Tatlong Buwan" value="3" />
                                         <x-select.option label="6 Months / Anim na Buwan" value="6" />
@@ -579,18 +580,26 @@
                         </div>                     
                          <h3 class="mt-4 font-semibold mb-2 flex justify-between items-center">
                             <span>Ledgers</span>
-                            @if ($selectedLoan->ledgers->first()?->ledger_path)
-                                <a href="{{ asset('storage/' . $selectedLoan->ledgers->first()->ledger_path) }}"
-                                    download
-                                    class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent p-1 bg-red-500 hover:bg-red-600 text-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                    </svg>
-                                    Export as PDF
-                                </a>
-                            @else
-                                <span class="text-xs text-gray-400 italic">No ledger PDF available</span>
-                            @endif
+                            <div class="flex flex-row space-x-2">
+                                <button type="button" class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800">
+                                    Total Payments: 
+                                    <span class="inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium bg-red-500 text-white">{{$remainingLedgers}}</span>
+                                </button>
+                                 @if ($selectedLoan->ledgers->first()?->ledger_path)
+                                    <a href="{{ asset('storage/' . $selectedLoan->ledgers->first()->ledger_path) }}"
+                                        download
+                                        class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent p-1 bg-red-500 hover:bg-red-600 text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                        </svg>
+                                        Export as PDF
+                                    </a>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">No ledger PDF available</span>
+                                @endif
+                                
+                            </div>
+                           
                         </h3>
                         <hr class="border-red-500 mb-4">
                         <div class="flex flex-col max-w-[320px] mx-auto lg:mx-0 lg:max-w-full">

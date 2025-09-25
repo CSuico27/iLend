@@ -2,6 +2,9 @@
 
 namespace App\Livewire\Client;
 
+use App\Models\PHCities;
+use App\Models\PHProvinces;
+use App\Models\PHRegions;
 use App\Models\UserProfile;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Title;
@@ -13,12 +16,21 @@ class MembershipPage extends Component
 {
     use WithFilePond;
 
-    public $name, $email, $phone, $birthdate, $gender, $address;
+    public $name, $email, $phone, $birthdate, $gender;
     public $biodata, $barangay_clearance, $valid_id, $tin_number;
 
     public int $currentStep;
     public bool $isFinishedStepOne;
     public bool $isFinishedStepTwo;
+
+    public $region;
+    public $province;
+    public $municipality;
+    public $barangay;
+
+    public $regionCode;
+    public $provinceCode;
+    public $municipalityCode;
 
     public function mount(){
         $this->initialData();
@@ -41,7 +53,7 @@ class MembershipPage extends Component
     }
 
     public function nextStep(){
-        if($this->currentStep < 2 && $this->name && $this->email && $this->phone && $this->birthdate && $this->gender && $this->address){
+        if($this->currentStep < 2 && $this->name && $this->email && $this->phone && $this->birthdate && $this->gender && $this->region && $this->province && $this->municipality && $this->barangay){
             $this->currentStep = $this->currentStep + 1;
             $this->isFinishedStepOne = true;
         }
@@ -60,7 +72,10 @@ class MembershipPage extends Component
         'phone' => 'required|string',
         'birthdate' => 'required|date',
         'gender' => 'required|string',
-        'address' => 'required|string|max:255',
+        'region' => 'required|max:255',
+        'province' => 'required|max:255',
+        'municipality' => 'required|max:255',
+        'barangay' => 'required|max:255',
         'biodata' => 'required|file|image|max:2048',
         'barangay_clearance' => 'required|file|max:2048',
         'valid_id' => 'required|file|max:2048',
@@ -95,7 +110,10 @@ class MembershipPage extends Component
         $profile->phone = $formattedPhone;
         $profile->birthdate = $this->birthdate;
         $profile->gender = $this->gender;
-        $profile->address = $this->address;
+        $profile->region = $this->region;
+        $profile->province = $this->province;
+        $profile->municipality = $this->municipality;
+        $profile->barangay = $this->barangay;
         $profile->tin_number = $this->tin_number;
         $profile->is_applied_for_membership = true;
         $profile->status = 'Pending';
@@ -103,6 +121,36 @@ class MembershipPage extends Component
         $profile->save();
 
         return redirect()->route('user.home')->with('membership_success', 'Thank you for submitting your application. Your application is currently under review.');
+    }
+
+    public function updatedRegion($value)
+    {
+        $this->getRegionCode();
+    }
+    public function getRegionCode(){
+        if($this->region){
+            $this->regionCode = PHRegions::where('region_description', $this->region)->value('region_code');
+        }
+    }
+
+    public function updatedProvince($value)
+    {
+        $this->getProvinceCode();
+    }
+    public function getProvinceCode(){
+        if($this->province){
+            $this->provinceCode = PHProvinces::where('province_description', $this->province)->value('province_code');
+        }
+    }
+
+    public function updatedMunicipality($value)
+    {
+        $this->getMunicipalityCode();
+    }
+    public function getMunicipalityCode(){
+        if($this->municipality){
+            $this->municipalityCode = PHCities::where('city_municipality_description', $this->municipality)->value('city_municipality_code');
+        }
     }
 
     public function render()
