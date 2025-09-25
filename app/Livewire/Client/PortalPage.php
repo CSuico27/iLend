@@ -3,6 +3,7 @@
 namespace App\Livewire\Client;
 
 use App\Models\CreditScore;
+use App\Models\Interest;
 use App\Models\Ledger;
 use App\Models\Loan;
 use App\Models\User;
@@ -63,6 +64,8 @@ class PortalPage extends Component
     protected $queryString = ['activeTab'];
     public $selected_gcash_qr;
     public $gcashQrs = [];
+    public $remainingLedgers = 0;
+
 
     public function setActiveTab($tab)
     {
@@ -91,6 +94,8 @@ class PortalPage extends Component
             //for edit profile fields
             $this->phone = $this->userInfo->info->phone ?? '';
             $this->address = $this->userInfo->info->address ?? '';
+
+            $this->interest_rate = Interest::orderByDesc('created_at')->value('interest_rate') ?? 0;
 
             //for gcash qr codes
             $this->gcashQrs = \App\Models\gcash::all();
@@ -128,6 +133,11 @@ class PortalPage extends Component
                 });
             
                 $this->remainingBalance = round($totalPayable - $this->totalPaid, 2);
+
+                $this->remainingLedgers = $this->activeLoanDetails
+                    ->ledgers()
+                    ->where('status', '!=', 'Paid')
+                    ->count();
             } else {
                 $this->hasActiveLoan = false;
                 $this->activeLoanAmount = 0;
@@ -245,7 +255,7 @@ class PortalPage extends Component
         $loanAmount = (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? '');
 
         if (Auth::check() && Auth::user()->role === 'user') {
-            $interestRate = 0;
+            $interestRate = Interest::latestRate();
         } else {
             $interestRate = (float) ($this->interest_rate ?? 0);
         }
@@ -308,7 +318,7 @@ class PortalPage extends Component
             $this->calculateLoan();
             
             if (Auth::check() && Auth::user()->role === 'user') {
-                $calculatedInterestRate = 0;
+                $calculatedInterestRate = Interest::latestRate();
             } else {
                 $calculatedInterestRate = (float) ($this->interest_rate ?? 0);
             }
@@ -425,6 +435,13 @@ class PortalPage extends Component
             'status' => 'Pending',
             'date_received' => now(),
         ]);
+
+        if ($this->activeLoanDetails) {
+            $this->remainingLedgers = $this->activeLoanDetails
+                ->ledgers()
+                ->where('status', '!=', 'Paid')
+                ->count();
+        }
         
         $this->showPaymentModal = false;
         
@@ -506,6 +523,13 @@ class PortalPage extends Component
             $this->notification()->error('Generation Failed', 'Unable to generate ledger PDF. Please try again.');
             logger('Ledger generation error: ' . $e->getMessage());
         }
+    }
+
+    public function getRemainingLedgersCount($loanId)
+    {
+        $loan = Loan::with('ledgers')->findOrFail($loanId);
+
+        return $loan->ledgers()->where('status', '!=', 'Paid')->count();
     }
 
     public function render()

@@ -122,8 +122,17 @@ class MemberListResource extends Resource
                                                             'Not Specified' => 'Not Specified',
                                                         ])
                                                         ->disabled(),
-                                                    TextInput::make('address')
-                                                        ->label('Address')
+                                                    TextInput::make('region')
+                                                        ->label('Region')
+                                                        ->disabled(),
+                                                    TextInput::make('province')
+                                                        ->label('Province')
+                                                        ->disabled(),
+                                                    TextInput::make('municipality')
+                                                        ->label('Municipality')
+                                                        ->disabled(),
+                                                    TextInput::make('barangay')
+                                                        ->label('Barangay')
                                                         ->disabled(),
                                                 ]),
 

@@ -95,12 +95,116 @@
                                         @enderror
                                     </div>
                                 </div>
-                                <x-input
+
+                                <div class="w-full flex flex-col md:flex-row gap-5 mt-5 mb-4">
+                                    <x-select
+                                        label="Select Region"
+                                        wire:model.live="region"
+                                        placeholder="Ex: REGION IV-A"
+                                        :async-data="route('api.regions.index')"
+                                        :template="[
+                                            'region_description'   => 'user-option',
+                                        ]"
+                                        option-label="region_description"
+                                        option-value="region_description"
+                                        {{-- option-description="region_description" --}}
+                                        
+                                    />
+                                    @if (!$region)
+                                        <x-select
+                                            label="Select City/Province"
+                                            wire:model.live="province"
+                                            placeholder="Ex: CITY OF MANILA"
+                                            {{-- :async-data="route('location.region', ['regionCode' => $regionCode])" --}}
+                                            :template="[
+                                                'province_description'   => 'user-option',
+                                            ]"
+                                            option-label="province_description"
+                                            option-value="province_description"
+                                            {{-- option-description="province_description" --}}
+                                            disabled
+                                        />
+                                    @else
+                                        <x-select
+                                            label="Select City/Province"
+                                            wire:model.live="province"
+                                            placeholder="Ex: CITY OF MANILA"
+                                            :async-data="route('location.province', ['regionCode' => $regionCode])"
+                                            :template="[
+                                                'province_description'   => 'user-option',
+                                            ]"
+                                            option-label="province_description"
+                                            option-value="province_description"
+                                            {{-- option-description="province_description" --}}
+                                        />
+                                    @endif
+                                </div>
+                                <div class="w-full flex flex-col md:flex-row gap-5 mt-5 mb-4">
+                                    @if (!$province)
+                                    
+                                        <x-select
+                                            label="Select Municipality"
+                                            wire:model.live="municipality"
+                                            placeholder="Ex: ATIMONAN"
+                                            {{-- :async-data="route('location.province', ['provinceCode' => $provinceCode])" --}}
+                                            :template="[
+                                                'city_municipality_description'   => 'user-option',
+                                            ]"
+                                            option-label="city_municipality_description"
+                                            option-value="city_municipality_description"
+                                            {{-- option-description="city_municipality_description" --}}
+                                            disabled
+                                        />
+                                    @else
+                                        <x-select
+                                            label="Select Municipality"
+                                            wire:model.live="municipality"
+                                            placeholder="Ex: ATIMONAN"
+                                            :async-data="route('location.municipality', ['provinceCode' => $provinceCode])"
+                                            :template="[
+                                                'city_municipality_description'   => 'user-option',
+                                            ]"
+                                            option-label="city_municipality_description"
+                                            option-value="city_municipality_description"
+                                            {{-- option-description="city_municipality_description" --}}
+                                        />
+                                    @endif
+                                    
+                                    @if (!$region || !$province || !$municipality)
+                                        <x-select
+                                            label="Select Barangay"
+                                            wire:model.live="barangay"
+                                            placeholder="Ex: Poblacion II"
+                                            {{-- :async-data="route('api.barangays.index')" --}}
+                                            :template="[
+                                                'barangay_description'   => 'user-option',
+                                            ]"
+                                            option-label="barangay_description"
+                                            option-value="barangay_description"
+                                            {{-- option-description="barangay_description" --}}
+                                            disabled
+                                        />
+                                    @else
+                                        <x-select
+                                            label="Select Barangay"
+                                            wire:model.live="barangay"
+                                            placeholder="Ex: Poblacion II"
+                                            :async-data="route('location.barangay', ['municipalityCode' => $municipalityCode])"
+                                            :template="[
+                                                'barangay_description'   => 'user-option',
+                                            ]"
+                                            option-label="barangay_description"
+                                            option-value="barangay_description"
+                                            {{-- option-description="barangay_description" --}}
+                                        />
+                                    @endif
+                                </div>
+                                {{-- <x-input
                                     wire:model.blur="address"
                                     icon="map-pin"
                                     label="Address"
                                     placeholder="Enter your address"
-                                />
+                                /> --}}
                             </div>
                         </div>
                     </div>
@@ -148,7 +252,7 @@
 
                     @if ($currentStep < 2)
                         <button wire:click="nextStep" type="button" class="ml-auto mt-4 py-2 px-3 inline-flex items-center gap-x-1 text-base font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                        {{ !$name || !$email || !$phone || !$birthdate || !$gender || !$address  ? 'disabled="disabled"' : '' }}
+                        {{ !$name || !$email || !$phone || !$birthdate || !$gender || !$region || !$province || !$municipality || !$barangay ? 'disabled=disabled' : '' }}
                         >
                             Next
                             <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

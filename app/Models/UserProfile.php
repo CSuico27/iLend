@@ -13,7 +13,6 @@ class UserProfile extends Model
         'phone',
         'birthdate',
         'gender',
-        'address',
         'avatar',
         'biodata',
         'brgy_clearance',
@@ -22,6 +21,10 @@ class UserProfile extends Model
         'approved_at',
         'is_applied_for_membership',
         'status',
+        'region',
+        'province',
+        'municipality',
+        'barangay'
     ];
     public function user(): BelongsTo
     {
