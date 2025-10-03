@@ -534,6 +534,8 @@ class LoansManagementResource extends Resource
                     Tables\Actions\DeleteAction::make()
                         ->modalHeading('Delete Loan'),
                 ])
+                    ->button()
+                    ->label('Actions')
                 // ActionGroup::make([
                 //     Tables\Actions\DeleteAction::make()
                 //         ->modalHeading('Delete Loan')

@@ -37,6 +37,10 @@ class LoginPage extends Component
             return;
         }
 
+        if (auth()->user()->role === 'admin') { // If the authenticated user has the "admin" role, 
+            return redirect()->route('filament.admin.pages.dashboard'); // redirect them to the Filament admin dashboard.
+        }
+
         return redirect()->intended();
     }
     

@@ -223,10 +223,11 @@
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">₱{{ number_format($loan->loan_amount, 2) }}</td>
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{ $loan->interest_rate }}%</td>
                                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{{ $loan->loan_term }}</td>
-                                                        <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                                        <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium flex justify-center items-center">
                                                             <x-dropdown position="bottom">
                                                                 <x-dropdown.item label="Full Details" x-on:click="$openModal('laonDetailsModal')" wire:click="loadLoanDetails({{ $loan->id }})" />
                                                             </x-dropdown>
+                                                            <span class="text-gray-500">Actions</span>
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -409,7 +410,7 @@
                     </div>
             @elseif ($activeTab === 'profile')
                 <div class="w-full mt-5 flex flex-col items-center">
-                    <div class="w-full max-w-xl flex flex-col items-center bg-gray-50 rounded-xl shadow-md p-6 relative">
+                    <div class="w-full max-w-[650px] flex flex-col items-center bg-gray-50 rounded-xl shadow-md p-6 relative">
 
                         <div class="flex flex-row mr-auto gap-4">
                             <div class="w-28 h-28">
@@ -435,7 +436,7 @@
                                     label="Edit" 
                                     primary 
                                     class="w-16 h-6 mt-2 bg-red-600 hover:bg-red-400 focus:bg-red-400 focus:ring-red-400"
-                                    wire:click="$set('showProfileEditModal', true)" 
+                                    wire:click="openProfileEditModal"
                                 />
                             </div>
                         </div>
@@ -451,17 +452,120 @@
 
                                 <x-phone
                                     id="multiple-mask"
-                                    wire:model.defer="phone"
+                                    wire:model.live="phone"
                                     label="Phone"
                                     placeholder="Phone"
                                     :mask="['+63 ### ### ####']"
                                 />
 
-                                <x-input 
+                                {{-- <x-input 
                                     label="Address" 
                                     placeholder="Address" 
                                     wire:model.defer="address" 
-                                />
+                                /> --}}
+                                <div class="w-full flex flex-col md:flex-row gap-2">
+                                    <x-select
+                                        label="Select Region"
+                                        wire:model.live="region"
+                                        placeholder="Ex: REGION IV-A"
+                                        :async-data="route('api.regions.index')"
+                                        :template="[
+                                            'region_description'   => 'user-option',
+                                        ]"
+                                        option-label="region_description"
+                                        option-value="region_description"
+                                        {{-- option-description="region_description" --}}
+                                        
+                                    />
+                                    @if (!$region)
+                                        <x-select
+                                            label="Select City/Province"
+                                            wire:model.live="province"
+                                            placeholder="Ex: CITY OF MANILA"
+                                            {{-- :async-data="route('location.region', ['regionCode' => $regionCode])" --}}
+                                            :template="[
+                                                'province_description'   => 'user-option',
+                                            ]"
+                                            option-label="province_description"
+                                            option-value="province_description"
+                                            {{-- option-description="province_description" --}}
+                                            disabled
+                                        />
+                                    @else
+                                        <x-select
+                                            label="Select City/Province"
+                                            wire:model.live="province"
+                                            placeholder="Ex: CITY OF MANILA"
+                                            :async-data="route('location.province', ['regionCode' => $regionCode])"
+                                            :template="[
+                                                'province_description'   => 'user-option',
+                                            ]"
+                                            option-label="province_description"
+                                            option-value="province_description"
+                                            {{-- option-description="province_description" --}}
+                                        />
+                                    @endif
+                                </div>
+                                <div class="w-full flex flex-col md:flex-row gap-2">
+                                    @if (!$province)
+                                    
+                                        <x-select
+                                            label="Select Municipality"
+                                            wire:model.live="municipality"
+                                            placeholder="Ex: ATIMONAN"
+                                            {{-- :async-data="route('location.province', ['provinceCode' => $provinceCode])" --}}
+                                            :template="[
+                                                'city_municipality_description'   => 'user-option',
+                                            ]"
+                                            option-label="city_municipality_description"
+                                            option-value="city_municipality_description"
+                                            {{-- option-description="city_municipality_description" --}}
+                                            disabled
+                                        />
+                                    @else
+                                        <x-select
+                                            label="Select Municipality"
+                                            wire:model.live="municipality"
+                                            placeholder="Ex: ATIMONAN"
+                                            :async-data="route('location.municipality', ['provinceCode' => $provinceCode])"
+                                            :template="[
+                                                'city_municipality_description'   => 'user-option',
+                                            ]"
+                                            option-label="city_municipality_description"
+                                            option-value="city_municipality_description"
+                                            {{-- option-description="city_municipality_description" --}}
+                                        />
+                                    @endif
+                                    
+                                    @if (!$region || !$province || !$municipality)
+                                        <x-select
+                                            label="Select Barangay"
+                                            wire:model.live="barangay"
+                                            placeholder="Ex: Poblacion II"
+                                            {{-- :async-data="route('api.barangays.index')" --}}
+                                            :template="[
+                                                'barangay_description'   => 'user-option',
+                                            ]"
+                                            option-label="barangay_description"
+                                            option-value="barangay_description"
+                                            {{-- option-description="barangay_description" --}}
+                                            disabled
+                                        />
+                                    @else
+                                        <x-select
+                                            label="Select Barangay"
+                                            wire:model.live="barangay"
+                                            placeholder="Ex: Poblacion II"
+                                            :async-data="route('location.barangay', ['municipalityCode' => $municipalityCode])"
+                                            :template="[
+                                                'barangay_description'   => 'user-option',
+                                            ]"
+                                            option-label="barangay_description"
+                                            option-value="barangay_description"
+                                            {{-- option-description="barangay_description" --}}
+                                        />
+                                    @endif
+                                </div>
                             </form>
 
                             <x-slot name="footer" class="flex justify-between gap-x-4">
@@ -484,13 +588,16 @@
 
                         <div class="mt-6 w-full">
                             <hr class="border-blue-500">
-                            <div class="mt-4 flex flex-col md:flex-row justify-between gap-4">
+                            <div class="mt-4 grid grid-cols-1 md:grid-cols-2">
                                 <div class="space-y-1">
                                     <p class="text-sm text-gray-500">Member ID: 
                                         <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->member_id }}</span>
                                     </p>
-                                    <p class="text-sm text-gray-500">TIN No.: 
-                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->tin_number }}</span>
+                                    <p class="text-sm text-gray-500">
+                                        TIN No.: 
+                                        <span class="font-semibold text-lg text-gray-800">
+                                            {{ preg_replace('/^(\d{3})(\d{3})(\d{3})(\d{5})$/', '$1-$2-$3-$4', $userInfo->info->tin_number) }}
+                                        </span>
                                     </p>
                                     <p class="text-sm text-gray-500">Email: 
                                         <span class="font-semibold text-lg text-gray-800">{{ $userInfo->email }}</span>
@@ -506,7 +613,7 @@
                                         </span>
                                     </p>
                                     <p class="text-sm text-gray-500">Address: 
-                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->address }}</span>
+                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->info->region . ", " . $userInfo->info->province . ", " . $userInfo->info->municipality . ", " . $userInfo->info->barangay}}</span>
                                     </p>
                                 </div>
                             </div>

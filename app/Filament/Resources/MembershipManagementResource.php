@@ -313,7 +313,9 @@ class MembershipManagementResource extends Resource
                                 ->after(fn () => redirect()->route('filament.admin.resources.membership-managements.index')),
                         ]),
                     Tables\Actions\DeleteAction::make(),
-                ]),
+                ])
+                    ->button()
+                    ->label('Actions'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
