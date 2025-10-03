@@ -6,6 +6,9 @@ use App\Models\CreditScore;
 use App\Models\Interest;
 use App\Models\Ledger;
 use App\Models\Loan;
+use App\Models\PHCities;
+use App\Models\PHProvinces;
+use App\Models\PHRegions;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -58,8 +61,14 @@ class PortalPage extends Component
 
     public $showProfileEditModal = false;
     public $phone;
-    public $address;
+    public $region;
+    public $province;
+    public $municipality;
+    public $barangay;
     public $avatar;
+    public $regionCode;
+    public $provinceCode;
+    public $municipalityCode;
 
     protected $queryString = ['activeTab'];
     public $selected_gcash_qr;
@@ -92,8 +101,23 @@ class PortalPage extends Component
             $this->userInfo = User::with('info')->find(Auth::id());
 
             //for edit profile fields
-            $this->phone = $this->userInfo->info->phone ?? '';
-            $this->address = $this->userInfo->info->address ?? '';
+            // $this->phone = $this->userInfo->info->phone ?? '';
+            // $this->address = $this->userInfo->info->address ?? '';
+            $this->region = $this->userInfo->info->region ?? '';
+            $this->province = $this->userInfo->info->province ?? '';
+            $this->municipality = $this->userInfo->info->municipality ?? '';
+            $this->barangay = $this->userInfo->info->barangay ?? '';
+
+            // Initialize codes if values exist
+            if ($this->region) {
+                $this->getRegionCode();
+            }
+            if ($this->province) {
+                $this->getProvinceCode();
+            }
+            if ($this->municipality) {
+                $this->getMunicipalityCode();
+            }
 
             $this->interest_rate = Interest::orderByDesc('created_at')->value('interest_rate') ?? 0;
 
@@ -450,12 +474,25 @@ class PortalPage extends Component
             'Your payment has been submitted for admin review.'
         );
     }
+
+    public function openProfileEditModal()
+    {
+        // Reset dropdowns to null just for the modal
+        $this->reset(['region', 'province', 'municipality', 'barangay']);
+
+        $this->showProfileEditModal = true;
+    }
+
     public function updateProfile()
     {
         $this->validate([
             'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            // 'address' => 'nullable|string|max:255',
             'avatar'  => 'nullable|image|max:2048',
+            'region' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
+            'municipality' => 'nullable|string|max:255',
+            'barangay' => 'nullable|string|max:255'
         ]);
 
         $phone = $this->phone;
@@ -471,10 +508,15 @@ class PortalPage extends Component
             $user->update(['avatar' => $path]); // avatar column in users table
         }
 
-        $user->info->update([
-            'phone'   => $phone,
-            'address' => $this->address,
-        ]);
+        $updateData = [
+            'phone' => $phone ?? $user->info->phone,
+            'region' => $this->region ?? $user->info->region,
+            'province' => $this->province ?? $user->info->province,
+            'municipality' => $this->municipality ?? $user->info->municipality,
+            'barangay' => $this->barangay ?? $user->info->barangay,
+        ];
+
+        $user->info->update($updateData);
 
         $this->notification()->success('Profile Updated', 'Your profile information has been saved successfully.');
 
@@ -530,6 +572,36 @@ class PortalPage extends Component
         $loan = Loan::with('ledgers')->findOrFail($loanId);
 
         return $loan->ledgers()->where('status', '!=', 'Paid')->count();
+    }
+
+    public function updatedRegion($value)
+    {
+        $this->getRegionCode();
+    }
+    public function getRegionCode(){
+        if($this->region){
+            $this->regionCode = PHRegions::where('region_description', $this->region)->value('region_code');
+        }
+    }
+
+    public function updatedProvince($value)
+    {
+        $this->getProvinceCode();
+    }
+    public function getProvinceCode(){
+        if($this->province){
+            $this->provinceCode = PHProvinces::where('province_description', $this->province)->value('province_code');
+        }
+    }
+
+    public function updatedMunicipality($value)
+    {
+        $this->getMunicipalityCode();
+    }
+    public function getMunicipalityCode(){
+        if($this->municipality){
+            $this->municipalityCode = PHCities::where('city_municipality_description', $this->municipality)->value('city_municipality_code');
+        }
     }
 
     public function render()

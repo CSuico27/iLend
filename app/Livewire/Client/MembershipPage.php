@@ -79,7 +79,12 @@ class MembershipPage extends Component
         'biodata' => 'required|file|image|max:2048',
         'barangay_clearance' => 'required|file|max:2048',
         'valid_id' => 'required|file|max:2048',
-        'tin_number' => 'required|string',
+        'tin_number' => ['required','digits:14'],
+    ];
+
+    protected $messages = [
+        'tin_number.required' => 'Your TIN number is required.',
+        'tin_number.digits'   => 'Your TIN number must be exactly 14 digits.',
     ];
 
     public function save()

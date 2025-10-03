@@ -210,7 +210,9 @@ class SeminarScheduleResource extends Resource
                         ->modalDescription('Are you sure you want to send email notification to all attendees of this seminar?')
                         ->modalSubmitActionLabel('Send'),
                     Tables\Actions\DeleteAction::make(),
-                ]),
+                ])
+                    ->button()
+                    ->label('Actions'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

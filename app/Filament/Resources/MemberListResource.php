@@ -201,8 +201,28 @@ class MemberListResource extends Resource
                         ->modalContent(fn ($record) => view('filament.custom.credit-score-chart', [
                             'creditScore' => $record->creditScore?->score ?? 0,
                         ])),
+                    Tables\Actions\Action::make('changeApprovedDate')
+                        ->label('Change Duration')
+                        ->icon('heroicon-o-calendar')
+                        ->form([
+                            DatePicker::make('approved_at')
+                                ->label('Approved At')
+                                ->required(),
+                        ])
+                        ->fillForm(fn (User $record): array => [
+                            'approved_at' => $record->info?->approved_at,
+                        ])
+                        ->action(function (User $record, array $data): void {
+                            $record->info->update([
+                                'approved_at' => $data['approved_at'],
+                            ]);
+                        })
+                        ->modalHeading('Update Approved Date')
+                        ->modalButton('Save Date'),
                     Tables\Actions\DeleteAction::make(),
-                ]),
+                ])
+                    ->button()
+                    ->label('Actions'),
             ])
             ->recordAction(null)
             ->bulkActions([
