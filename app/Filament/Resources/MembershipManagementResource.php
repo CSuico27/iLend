@@ -215,6 +215,11 @@ class MembershipManagementResource extends Resource
                 TextColumn::make('created_at')
                     ->label('Date Applied')
                     ->date('F j, Y'),
+                TextColumn::make('actions_header')
+                    ->label('Actions')
+                    ->getStateUsing(fn() => null)
+                    ->sortable(false)
+                    ->searchable(false),
             ])
             ->recordAction(null)
             ->actions([
@@ -314,8 +319,11 @@ class MembershipManagementResource extends Resource
                         ]),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->button()
-                    ->label('Actions'),
+                ->label('Actions')
+                ->extraAttributes([
+                    'class' => '-ml-10',
+                    'style' => 'margin-left:-78px;',
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

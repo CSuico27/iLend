@@ -86,6 +86,11 @@ class MemberListResource extends Resource
                         return implode(' and ', $text);
                     })
                     ->color('success'),
+                TextColumn::make('actions_header')
+                    ->label('Actions')
+                    ->getStateUsing(fn() => null)
+                    ->sortable(false)
+                    ->searchable(false),
             ])
             ->filters([])
             ->actions([
@@ -221,8 +226,11 @@ class MemberListResource extends Resource
                         ->modalButton('Save Date'),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->button()
-                    ->label('Actions'),
+                ->label('Actions')
+                ->extraAttributes([
+                    'class' => '-ml-10',
+                    'style' => 'margin-left:-70px;',
+                ]),
             ])
             ->recordAction(null)
             ->bulkActions([

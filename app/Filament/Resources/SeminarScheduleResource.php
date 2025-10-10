@@ -12,6 +12,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\SeminarScheduleResource\Pages;
 use App\Mail\SeminarCreatedNotification;
+use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DatePicker;
@@ -85,16 +86,43 @@ class SeminarScheduleResource extends Resource
                     ->required()
                     ->columnSpanFull(),
 
+                // Select::make('user_ids')
+                //     ->label('Attendees')
+                //     ->options(User::where('role', '!=', 'admin')
+                //         ->whereHas('info', fn ($q) => $q->where('status', 'Approved'))
+                //         ->pluck('name', 'id'))
+                //     ->multiple()
+                //     ->searchable()
+                //     ->preload()
+                //     ->required()
+                //     ->columnSpanFull(),
                 Select::make('user_ids')
                     ->label('Attendees')
-                    ->options(User::where('role', '!=', 'admin')
-                        ->whereHas('info', fn ($q) => $q->where('status', 'Approved'))
-                        ->pluck('name', 'id'))
+                    ->options(
+                        $users = User::where('role', '!=', 'admin')
+                            ->whereHas('info', fn ($q) => $q->where('status', 'Approved'))
+                            ->pluck('name', 'id')
+                    )
                     ->multiple()
                     ->searchable()
                     ->preload()
                     ->required()
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->hintActions([
+                        ActionsAction::make('select_all')
+                            ->label('Select All')
+                            ->action(function ($component) use ($users) {
+                                $component->state($users->keys()->toArray());
+                            }),
+
+                        ActionsAction::make('deselect_all')
+                            ->label('Deselect All')
+                            ->color('danger')
+                            ->action(function ($component) {
+                                $component->state([]);
+                            }),
+                    ]),
+
                 Textarea::make('details')
                     ->label('Description')
                     ->maxLength(255)
@@ -148,6 +176,11 @@ class SeminarScheduleResource extends Resource
                     ->action(function ($record, $livewire) {
                         $livewire->mountTableAction('viewParticipants', $record->getKey());
                     }),
+                TextColumn::make('actions_header')
+                    ->label('Actions')
+                    ->getStateUsing(fn() => null)
+                    ->sortable(false)
+                    ->searchable(false),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordAction(null)
@@ -211,8 +244,11 @@ class SeminarScheduleResource extends Resource
                         ->modalSubmitActionLabel('Send'),
                     Tables\Actions\DeleteAction::make(),
                 ])
-                    ->button()
-                    ->label('Actions'),
+                ->label('Actions')
+                ->extraAttributes([
+                    'class' => '-ml-10',
+                    'style' => 'margin-left:-88px;',
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

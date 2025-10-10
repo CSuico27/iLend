@@ -228,6 +228,7 @@
                                 </div>
                                 <div>
                                     <x-maskable 
+                                        wire:key="tin"
                                         wire:model.blur="tin_number"
                                         label="TIN Number" 
                                         mask="###-###-###-#####" 

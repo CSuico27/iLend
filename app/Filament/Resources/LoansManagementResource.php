@@ -412,6 +412,11 @@ class LoansManagementResource extends Resource
                         default => ucfirst($state ?? 'Unknown')
                     })
                     ->badge(),
+                TextColumn::make('actions_header')
+                    ->label('Actions')
+                    ->getStateUsing(fn() => null)
+                    ->sortable(false)
+                    ->searchable(false),
                 // TextColumn::make('status')
                 //     ->label('Status')
                 //     ->formatStateUsing(fn (string $state): string => ucfirst($state))
@@ -534,8 +539,11 @@ class LoansManagementResource extends Resource
                     Tables\Actions\DeleteAction::make()
                         ->modalHeading('Delete Loan'),
                 ])
-                    ->button()
-                    ->label('Actions')
+                ->label('Actions')
+                ->extraAttributes([
+                    'class' => '-ml-10',
+                    'style' => 'margin-left:-70px;',
+                ]),
                 // ActionGroup::make([
                 //     Tables\Actions\DeleteAction::make()
                 //         ->modalHeading('Delete Loan')
