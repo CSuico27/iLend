@@ -227,7 +227,6 @@
                                                             <x-dropdown position="bottom">
                                                                 <x-dropdown.item label="Full Details" x-on:click="$openModal('laonDetailsModal')" wire:click="loadLoanDetails({{ $loan->id }})" />
                                                             </x-dropdown>
-                                                            <span class="text-gray-500">Actions</span>
                                                         </td>
                                                     </tr>
                                                 @endforeach
@@ -600,7 +599,7 @@
                                         </span>
                                     </p>
                                     <p class="text-sm text-gray-500">Email: 
-                                        <span class="font-semibold text-lg text-gray-800">{{ $userInfo->email }}</span>
+                                        <span class="font-semibold text-lg text-gray-800 break-words">{{ $userInfo->email }}</span>
                                     </p>
                                 </div>
                                 <div class="space-y-1">

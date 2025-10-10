@@ -92,7 +92,37 @@ class MemberListResource extends Resource
                     ->sortable(false)
                     ->searchable(false),
             ])
-            ->filters([])
+            ->filters([
+                
+                Tables\Filters\Filter::make('recent')
+                    ->label('Approved in last 30 days')
+                    ->query(fn ($query) => $query->whereHas('info', function ($q) {
+                        $q->where('approved_at', '>=', now()->subDays(30));
+                    })),
+            
+                Tables\Filters\SelectFilter::make('membershipDuration')
+                    ->label('Membership Duration')
+                    ->options([
+                        'less_than_month' => 'Less than 1 Month',
+                        '1_12_months' => '1–12 Months',
+                        '1_5_years' => '1–5 Years',
+                        '5_plus_years' => '5+ Years',
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query->whereHas('info', function ($q) use ($data) {
+                            if ($data['value'] === 'less_than_month') {
+                                $q->where('approved_at', '>=', now()->subMonth());
+                            } elseif ($data['value'] === '1_12_months') {
+                                $q->whereBetween('approved_at', [now()->subYear(), now()->subMonth()]);
+                            } elseif ($data['value'] === '1_5_years') {
+                                $q->whereBetween('approved_at', [now()->subYears(5), now()->subYear()]);
+                            } elseif ($data['value'] === '5_plus_years') {
+                                $q->where('approved_at', '<=', now()->subYears(5));
+                            }
+                        });
+                    }),
+            ])
+            
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()
