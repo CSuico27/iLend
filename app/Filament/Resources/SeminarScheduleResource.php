@@ -76,6 +76,13 @@ class SeminarScheduleResource extends Resource
                     ->suffixIcon('heroicon-o-clock')
                     ->seconds(false),
 
+                TextInput::make('location')
+                    ->label('Location')
+                    ->placeholder('Enter meeting room, hall, or venue.')
+                    ->required()
+                    ->maxLength(255)
+                    ->columnSpanFull(),
+
                 Select::make('status')
                     ->label('Status')
                     ->options([
@@ -176,6 +183,8 @@ class SeminarScheduleResource extends Resource
                     ->action(function ($record, $livewire) {
                         $livewire->mountTableAction('viewParticipants', $record->getKey());
                     }),
+                TextColumn::make('location')
+                    ->label('Location'),
                 TextColumn::make('actions_header')
                     ->label('Actions')
                     ->getStateUsing(fn() => null)
