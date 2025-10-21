@@ -111,8 +111,14 @@ class LogObserver
     {
          $userName = $payment->ledger->loan->user?->name ?? 'Unknown User';
 
+        // \App\Models\Notifications::create([
+        //     'message' => "{$userName} has made a payment of ₱{$payment->amount} for Ledger ID: {$payment->ledger->id} under Loan ID: {$payment->ledger->loan_id}.",
+        //     'is_read' => false,
+        // ]);
         \App\Models\Notifications::create([
             'message' => "{$userName} has made a payment of ₱{$payment->amount} for Ledger ID: {$payment->ledger->id} under Loan ID: {$payment->ledger->loan_id}.",
+            'loan_id' => $payment->ledger->loan_id,
+            'ledger_id' => $payment->ledger->id,
             'is_read' => false,
         ]);
     }

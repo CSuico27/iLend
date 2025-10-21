@@ -36,7 +36,7 @@
     </div>
     <div style="padding: 1rem; overflow-y: auto; height: calc(100% - 64px); display: flex; flex-direction: column; gap: 0.75rem;">
         @forelse ($notifications as $notification)
-            <a href="{{ url('/admin/loans-managements') }}" 
+            <a href="{{ url('/admin/loans-managements/' . $notification->loan_id . '/edit') }}" 
                 style="text-decoration: none; color: inherit;">
                 <div style="background-color: #f3f4f6; padding: 0.75rem; border-radius: 0.375rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-size: 0.875rem; cursor: pointer; transition: background 0.2s;"
                     onmouseover="this.style.backgroundColor='#e5e7eb'" 
