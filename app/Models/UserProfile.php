@@ -13,6 +13,7 @@ class UserProfile extends Model
         'phone',
         'birthdate',
         'gender',
+        'marital_status',
         'avatar',
         'biodata',
         'brgy_clearance',

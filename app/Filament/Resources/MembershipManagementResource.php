@@ -110,6 +110,15 @@ class MembershipManagementResource extends Resource
                                                                 'Not Specified' => 'Not Specified',
                                                             ])
                                                             ->required(),
+                                                        Select::make('marital_status')
+                                                            ->label('Marital Status')
+                                                            ->options([
+                                                                'Single' => 'Single',
+                                                                'Married' => 'Married',
+                                                                'Divorced' => 'Divorced',
+                                                                'Widowed' => 'Widowed',
+                                                            ])
+                                                            ->disabled(),
                                                         TextInput::make('region')
                                                             ->label('Region')
                                                             ->required(),

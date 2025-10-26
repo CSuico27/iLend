@@ -9,6 +9,7 @@ You can now access all available services using your account. We are excited to 
 {{-- @component('mail::button', ['url' => 'https://ilend.online/login']) 
 Login Now
 @endcomponent --}}
+Click the link to proceed:
 [https://ilend.online/]({{ url('https://ilend.online/') }})
 @elseif ($status === 'Rejected')
 We're sorry, your membership request has been **rejected**.

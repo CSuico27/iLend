@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\gcash;
 use App\Models\Ledger;
 use App\Models\Loan;
 use App\Models\Payment;
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use App\Http\Responses\LogoutResponse;
+use App\Models\SeminarSchedule;
+use App\Models\User;
+use App\Models\UserProfile;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,5 +43,9 @@ class AppServiceProvider extends ServiceProvider
         Loan::observe(LogObserver::class);
         Payment::observe(LogObserver::class);
         Ledger::observe(LogObserver::class);
+        User::observe(LogObserver::class);
+        UserProfile::observe(LogObserver::class);
+        SeminarSchedule::observe(LogObserver::class);
+        gcash::observe(LogObserver::class);
     }
 }

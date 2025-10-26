@@ -42,6 +42,16 @@ class LoansManagementResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document';
     // protected static ?string $navigationGroup = 'Loans Management';
     protected static ?int $navigationSort = 3;
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'pending')->count();
+    }
+
+    public static function getNavigationBadgeColor(): string | array | null
+    {
+        return 'warning';
+    }
+    protected static ?string $navigationBadgeTooltip = 'Pending Loans';
 
     /**
      * @param Set 
