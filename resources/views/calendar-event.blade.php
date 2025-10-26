@@ -49,7 +49,7 @@
               <div class="hs-tooltip inline-block">
                 <img
                   class="hs-tooltip-toggle relative inline-block w-11 h-11 rounded-full ring-2 ring-white hover:z-10 dark:ring-neutral-900 object-cover"
-                  src="{{ $user['picture'] ? asset('storage/' . $user['picture']) : asset('images/default-avatar.png') }}"
+                  src="{{ ($user['avatar'] ?? false) ? asset('storage/' . $user['avatar']) : asset('images/ilend-logo.png') }}"
                   alt="Avatar"
                 >
                 <span class="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 inline-block absolute invisible z-20 py-1.5 px-2.5 bg-gray-900 text-xs text-white rounded-lg dark:bg-neutral-700" role="tooltip">

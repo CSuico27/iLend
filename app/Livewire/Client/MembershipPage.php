@@ -6,17 +6,21 @@ use App\Models\PHCities;
 use App\Models\PHProvinces;
 use App\Models\PHRegions;
 use App\Models\UserProfile;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Spatie\LivewireFilepond\WithFilePond;
+use WireUi\Traits\WireUiActions;
+
 
 #[Title('Membeship Application')]
 class MembershipPage extends Component
 {
     use WithFilePond;
-
-    public $name, $email, $phone, $birthdate, $gender;
+    use WireUiActions;
+    public $name, $email, $phone, $birthdate, $gender, $marital_status;
     public $biodata, $barangay_clearance, $valid_id, $tin_number;
 
     public int $currentStep;
@@ -52,9 +56,53 @@ class MembershipPage extends Component
         $this->isFinishedStepTwo = false;
     }
 
-    public function nextStep(){
-        if($this->currentStep < 2 && $this->name && $this->email && $this->phone && $this->birthdate && $this->gender && $this->region && $this->province && $this->municipality && $this->barangay){
-            $this->currentStep = $this->currentStep + 1;
+    // public function nextStep(){
+    //     if($this->currentStep < 2 && $this->name && $this->email && $this->phone && $this->birthdate && $this->gender && $this->region && $this->province && $this->municipality && $this->barangay){
+    //         $this->currentStep = $this->currentStep + 1;
+    //         $this->isFinishedStepOne = true;
+    //     }
+    // }
+    public function nextStep()
+    {
+        if (!$this->birthdate) {
+            $this->notification()->error(
+                title: 'Invalid Birthdate',
+                description: 'Please enter your birthdate before proceeding.'
+            );
+            return;
+        }
+
+        try {
+            $birth = Carbon::parse($this->birthdate);
+        } catch (\Exception $e) {
+            $this->notification()->error(
+                title: 'Invalid Format',
+                description: 'Please select a valid birthdate.'
+            );
+            return;
+        }
+
+        $age = $birth->age;
+
+        if ($age < 18) {
+            $this->notification()->error(
+                title: 'Age Restriction',
+                description: 'You must be at least 18 years old to proceed.'
+            );
+            return;
+        }
+
+        if ($age > 60) {
+            $this->notification()->error(
+                title: 'Age Restriction',
+                description: 'You must be younger than 60 years old to proceed.'
+            );
+            return;
+        }
+
+        // Proceed to next step only if birthdate is valid
+        if ($this->currentStep < 2) {
+            $this->currentStep++;
             $this->isFinishedStepOne = true;
         }
     }
@@ -66,30 +114,82 @@ class MembershipPage extends Component
         }
     }
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'email' => 'required|email',
-        'phone' => 'required|string',
-        'birthdate' => 'required|date',
-        'gender' => 'required|string',
-        'region' => 'required|max:255',
-        'province' => 'required|max:255',
-        'municipality' => 'required|max:255',
-        'barangay' => 'required|max:255',
-        'biodata' => 'required|file|image|max:2048',
-        'barangay_clearance' => 'required|file|max:2048',
-        'valid_id' => 'required|file|max:2048',
-        'tin_number' => ['required', 'digits_between:9,12'],
-    ];
+    // protected $rules = [
+    //     'name' => 'required|string|max:255',
+    //     'email' => 'required|email',
+    //     'phone' => 'required|string',
+    //     'birthdate' => 'required|date',
+    //     'gender' => 'required|string',
+    //     'region' => 'required|max:255',
+    //     'province' => 'required|max:255',
+    //     'municipality' => 'required|max:255',
+    //     'barangay' => 'required|max:255',
+    //     'biodata' => 'required|file|image|max:2048',
+    //     'barangay_clearance' => 'required|file|max:2048',
+    //     'valid_id' => 'required|file|max:2048',
+    //     'tin_number' => ['required', 'digits_between:9,12'],
+    // ];
+    protected function rules()
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string',
+            'birthdate' => [
+                'required',
+                'date',
+                function ($attribute, $value, $fail) {
+                    try {
+                        $birth = Carbon::parse($value);
+                    } catch (\Exception $e) {
+                        $fail('The birthdate format is invalid.');
+                        return;
+                    }
 
+                    $age = $birth->age;
+                    if ($age < 18) {
+                        $fail('You must be at least 18 years old to apply.');
+                    }
+                    if ($age > 60) {
+                        $fail('You must be younger than 60 years old to apply.');
+                    }
+                },
+            ],
+            'gender' => 'required|string',
+            'marital_status' => 'required|string',
+            'region' => 'required|max:255',
+            'province' => 'required|max:255',
+            'municipality' => 'required|max:255',
+            'barangay' => 'required|max:255',
+            'biodata' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
+            'barangay_clearance' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
+            'valid_id' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf|max:2048',
+            'tin_number' => ['required', 'digits_between:9,12'],
+        ];
+    }
     protected $messages = [
         'tin_number.required' => 'Your TIN number is required.',
         'tin_number.digits_between' => 'Your TIN number must be between 9 and 12 digits.',
     ];
+    public function updatedBirthdate()
+    {
+        $this->validateOnly('birthdate');
+    }
 
     public function save()
     {
         $this->validate();
+
+        try {
+            $birth = Carbon::parse($this->birthdate);
+        } catch (\Exception $e) {
+            throw ValidationException::withMessages(['birthdate' => 'Invalid birthdate format.']);
+        }
+
+        $age = $birth->age;
+        if ($age < 18 || $age > 60) {
+            throw ValidationException::withMessages(['birthdate' => 'Applicant must be between 18 and 60 years old.']);
+        }
 
         $user = Auth::user();
 
@@ -98,11 +198,9 @@ class MembershipPage extends Component
         if ($this->biodata) {
             $profile->biodata = $this->biodata->store('user-biodata', 'public');
         }
-    
         if ($this->barangay_clearance) {
             $profile->brgy_clearance = $this->barangay_clearance->store('brgy-clearance', 'public');
         }
-    
         if ($this->valid_id) {
             $profile->valid_id = $this->valid_id->store('valid-ids', 'public');
         }
@@ -113,8 +211,9 @@ class MembershipPage extends Component
         }
 
         $profile->phone = $formattedPhone;
-        $profile->birthdate = $this->birthdate;
+        $profile->birthdate = Carbon::parse($this->birthdate)->toDateString();
         $profile->gender = $this->gender;
+        $profile->marital_status = $this->marital_status;
         $profile->region = $this->region;
         $profile->province = $this->province;
         $profile->municipality = $this->municipality;
@@ -127,7 +226,6 @@ class MembershipPage extends Component
 
         return redirect()->route('user.home')->with('membership_success', 'Thank you for submitting your application. Your application is currently under review.');
     }
-
     public function updatedRegion($value)
     {
         $this->getRegionCode();

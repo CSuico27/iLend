@@ -63,17 +63,15 @@ class AppointmentsCalendar extends LivewireCalendar
         $userIds = $seminar->user_ids ?? [];
 
         $this->userNames = User::whereIn('id', $userIds)
-    ->with('info')
-    ->get()
-    ->map(function ($user) {
-        return [
-            'email' => $user->email,
-            'name' => $user->name,
-            'picture' =>$user->info?->picture,
-        ];
-    })->toArray();
-
-
+            ->with('info')
+            ->get()
+            ->map(function ($user) {
+                return [
+                    'email' => $user->email,
+                    'name' => $user->name,
+                    'avatar' =>$user->avatar,
+                ];
+            })->toArray();
 
         // $this->userPicture = UserProfile::with('info')
         //     ->whereIn('user_id', $user)
@@ -82,7 +80,6 @@ class AppointmentsCalendar extends LivewireCalendar
 
         $this->showModal = true;
     }
-
 
     public function goToPreviousMonth()
     {
@@ -107,7 +104,7 @@ class AppointmentsCalendar extends LivewireCalendar
         $this->currentMonth = Carbon::now()->startOfMonth();
         $this->setMonthRange($this->currentMonth);
     }
-
+    
     protected function setMonthRange(Carbon $monthStart)
     {
         $this->gridStartsAt = $monthStart->copy()->startOfWeek();

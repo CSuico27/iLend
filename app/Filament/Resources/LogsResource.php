@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\LogsResource\Pages;
-use App\Filament\Resources\LogsResource\RelationManagers;
 use App\Models\Log;
-use App\Models\Logs;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,9 +11,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class LogsResource extends Resource
 {
@@ -25,10 +23,12 @@ class LogsResource extends Resource
     protected static ?string $pluralModelLabel = 'Audit Trails'; 
     protected static ?string $navigationLabel = 'Logs';
     protected static ?int $navigationSort = 7;
+
     public static function canCreate(): bool
     {
         return false;
     }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -48,10 +48,14 @@ class LogsResource extends Resource
                             $q->where('member_id', 'like', "%{$search}%");
                         });
                     })
-                    ->getStateUsing(fn ($record) => $record->user?->info?->member_id ?? 'N/A'),
+                    ->getStateUsing(fn ($record) => 
+                        $record->changes ? json_decode($record->changes)->affected_member_id ?? 'N/A' : 'N/A'
+                    ),     
                 Tables\Columns\TextColumn::make('user.name')
                     ->label('Performed By')
-                    ->searchable(),
+                    ->searchable()
+                    ->getStateUsing(fn ($record) => $record->user?->name ?? 'N/A'),
+                
                 Tables\Columns\TextColumn::make('action')
                     ->label('Action')
                     ->badge()
@@ -61,68 +65,110 @@ class LogsResource extends Resource
                         'Deleted' => 'danger',
                         default => 'gray'
                     }),
+                
                 Tables\Columns\TextColumn::make('model')
                     ->label('Entry')
-                    ->searchable(),
+                    ->getStateUsing(function ($record) {
+                        $action = $record->action ?? 'Action';
+                        return match($record->model) {
+                            'User' => $action === 'Created' ? 'Created Account' : "{$action} User",
+                            'Loan' => $action === 'Created' ? 'Created Loan' : "{$action} Loan",
+                            'Payment' => $action === 'Created' ? 'Created Payment' : "{$action} Payment",
+                            'Ledger' => $action === 'Created' ? 'Created Ledger' : "{$action} Ledger",
+                            'SeminarSchedule' => $action === 'Created' ? 'Created Seminar' : "{$action} Seminar",
+                            'gcash' => $action === 'Created' ? 'Created GCash QR' : "{$action} GCash QR",
+                            default => $record->model
+                        };
+                    }),
+
+                
                 Tables\Columns\TextColumn::make('for_user')
                     ->label('Affected User')
                     ->getStateUsing(fn ($record) => 
                         $record->changes ? json_decode($record->changes)->affected_user ?? 'N/A' : 'N/A'
                     ),
-                Tables\Columns\TextColumn::make('amount')
-                    ->money('PHP', true),
+                
                 Tables\Columns\TextColumn::make('status')
-                    ->label('Status'),
+                    ->label('Status')
+                    ->getStateUsing(fn ($record) => $record->status ?? 'N/A'),
+                
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('Amount')
+                    ->getStateUsing(fn ($record) => $record->amount ? '₱' . number_format($record->amount, 2) : 'N/A'),
+                
                 Tables\Columns\TextColumn::make('loan_id')
-                    ->label('Loan ID'),
+                    ->label('Loan ID')
+                    ->getStateUsing(fn ($record) => $record->loan_id ?? 'N/A'),
+                
                 Tables\Columns\TextColumn::make('ledger_id')
                     ->label('Ledger ID')
                     ->getStateUsing(fn ($record) => $record->ledger_id ?? 'N/A'),
+                
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Date & Time')
                     ->dateTime()
                     ->searchable(),
-            ])->defaultSort('created_at', 'desc')
+            ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
+                SelectFilter::make('model')
+                    ->label('Model Type')
+                    ->options([
+                        'User' => 'User',
+                        'Loan' => 'Loan',
+                        'Payment' => 'Payment',
+                        'Ledger' => 'Ledger',
+                    ])
+                    ->multiple(),
+                
+                SelectFilter::make('action')
+                    ->label('Action')
+                    ->options([
+                        'Created' => 'Created',
+                        'Updated' => 'Updated',
+                        'Deleted' => 'Deleted',
+                    ])
+                    ->multiple(),
+                
                 Filter::make('created_at')
-                ->label('Filter')
-                ->form([
-                    Forms\Components\DatePicker::make('created_from')
-                        ->maxDate(now()),
-                    Forms\Components\DatePicker::make('created_until')
-                        ->maxDate(now()),
-                ])
-                ->query(function (Builder $query, array $data): Builder {
-                    return $query
-                        ->when(
-                            $data['created_from'] ?? null,
-                            fn (Builder $q, $date) => $q->whereDate('created_at', '>=', $date),
-                        )
-                        ->when(
-                            $data['created_until'] ?? null,
-                            fn (Builder $q, $date) => $q->whereDate('created_at', '<=', $date),
-                        );
-                })
-                ->indicateUsing(function (array $data): array {
-                    $indicators = [];
+                    ->label('Filter')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->maxDate(now()),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->maxDate(now()),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'] ?? null,
+                                fn (Builder $q, $date) => $q->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'] ?? null,
+                                fn (Builder $q, $date) => $q->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
 
-                    if ($data['created_from'] ?? null) {
-                        $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString())
-                            ->removeField('from');
-                    }
+                        if ($data['created_from'] ?? null) {
+                            $indicators[] = Indicator::make('Created from ' . Carbon::parse($data['created_from'])->toFormattedDateString())
+                                ->removeField('from');
+                        }
 
-                    if ($data['created_until'] ?? null) {
-                        $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString())
-                            ->removeField('until');
-                    }
+                        if ($data['created_until'] ?? null) {
+                            $indicators[] = Indicator::make('Created until ' . Carbon::parse($data['created_until'])->toFormattedDateString())
+                                ->removeField('until');
+                        }
 
-                    return $indicators;
-                })
+                        return $indicators;
+                    })
             ])
             ->filtersTriggerAction(
-            fn (Tables\Actions\Action $action) => $action
-                ->button()
-                ->label('Filter')
+                fn (Tables\Actions\Action $action) => $action
+                    ->button()
+                    ->label('Filter')
             )
             ->actions([
                 // Tables\Actions\EditAction::make(),

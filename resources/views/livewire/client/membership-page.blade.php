@@ -60,9 +60,21 @@
                                     id="multiple-mask"
                                     wire:model.blur="phone"
                                     label="Phone"
-                                    placeholder="Phone"
-                                    :mask="['+63 ### ### ####']"
+                                    placeholder="9XXXXXXXXX"
+                                    :mask="['##########']"
+                                >
+                                    <x-slot name="prefix">
+                                        <span class="text-gray-500 font-medium text-sm pl-1">+63</span>
+                                    </x-slot>
+                                </x-phone>
+                                
+                                <x-select
+                                    label="Marital Status"
+                                    placeholder="Select marital status"
+                                    :options="['Single', 'Married', 'Divorced', 'Widowed']"
+                                    wire:model="marital_status"
                                 />
+
                                 <x-datetime-picker
                                     wire:model.live="birthdate"
                                     label="Birthdate"
@@ -214,24 +226,36 @@
                             <div class="w-full h-auto px-0 lg:px-10 flex flex-col gap-3">
                                 <div>
                                     <p class="font-semibold">Your Biodata</p>
-                                    <x-filepond::upload wire:model="biodata" />
+                                    <x-filepond::upload 
+                                        wire:model="biodata" 
+                                        :accepted-file-types="['image/jpeg', 'image/png', 'application/pdf']"
+                                        label="Upload your Biodata"
+                                    />
                                 </div>
-                                
+
                                 <div>
                                     <p class="font-semibold">Barangay Clearance</p>
-                                    <x-filepond::upload wire:model="barangay_clearance" />
+                                    <x-filepond::upload 
+                                        wire:model="barangay_clearance" 
+                                        :accepted-file-types="['image/jpeg', 'image/png', 'application/pdf']"
+                                        label="Upload your Barangay Clearance"
+                                    />
                                 </div>
 
                                 <div>
                                     <p class="font-semibold">Valid Government ID</p>
-                                    <x-filepond::upload wire:model="valid_id" />
+                                    <x-filepond::upload 
+                                        wire:model="valid_id" 
+                                        :accepted-file-types="['image/jpeg', 'image/png', 'application/pdf']"
+                                        label="Upload your Valid ID"
+                                    />
                                 </div>
                                 <div>
                                     <x-maskable 
                                         wire:key="tin"
                                         wire:model.blur="tin_number"
                                         label="TIN Number" 
-                                        mask="###-###-###-#####" 
+                                        mask="###-###-###-###" 
                                         placeholder="TIN Number" 
                                     />
                                 </div>
@@ -253,7 +277,7 @@
 
                     @if ($currentStep < 2)
                         <button wire:click="nextStep" type="button" class="ml-auto mt-4 py-2 px-3 inline-flex items-center gap-x-1 text-base font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"
-                        {{ !$name || !$email || !$phone || !$birthdate || !$gender || !$region || !$province || !$municipality || !$barangay ? 'disabled=disabled' : '' }}
+                        {{ !$name || !$email || !$phone || !$birthdate || !$gender || !$marital_status || !$region || !$province || !$municipality || !$barangay ? 'disabled=disabled' : '' }}
                         >
                             Next
                             <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
