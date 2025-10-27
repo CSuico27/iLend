@@ -451,11 +451,15 @@
 
                                 <x-phone
                                     id="multiple-mask"
-                                    wire:model.live="phone"
+                                    wire:model.blur="phone"
                                     label="Phone"
-                                    placeholder="Phone"
-                                    :mask="['+63 ### ### ####']"
-                                />
+                                    placeholder="9XXXXXXXXX"
+                                    :mask="['##########']"
+                                >
+                                    <x-slot name="prefix">
+                                        <span class="text-gray-500 font-medium text-sm pl-1">+63</span>
+                                    </x-slot>
+                                </x-phone>
 
                                 <x-select label="Marital Status" wire:model.live="marital_status" placeholder="Enter your marital status">
                                         <x-select.option label="Single" value="Single" />
