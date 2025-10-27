@@ -66,6 +66,7 @@ class PortalPage extends Component
     public $municipality;
     public $barangay;
     public $avatar;
+    public $marital_status;
     public $regionCode;
     public $provinceCode;
     public $municipalityCode;
@@ -107,6 +108,7 @@ class PortalPage extends Component
             $this->province = $this->userInfo->info->province ?? '';
             $this->municipality = $this->userInfo->info->municipality ?? '';
             $this->barangay = $this->userInfo->info->barangay ?? '';
+            $this->marital_status = $this->userInfo->info->marital_status ?? '';
 
             // Initialize codes if values exist
             if ($this->region) {
@@ -492,7 +494,8 @@ class PortalPage extends Component
             'region' => 'nullable|string|max:255',
             'province' => 'nullable|string|max:255',
             'municipality' => 'nullable|string|max:255',
-            'barangay' => 'nullable|string|max:255'
+            'barangay' => 'nullable|string|max:255',
+            'marital_status' => 'nullable|string|in:Single,Married,Divorced,Widowed'
         ]);
 
         $phone = $this->phone;
@@ -514,6 +517,7 @@ class PortalPage extends Component
             'province' => $this->province ?? $user->info->province,
             'municipality' => $this->municipality ?? $user->info->municipality,
             'barangay' => $this->barangay ?? $user->info->barangay,
+            'marital_status' => $this->marital_status ?? $user->info->marital_status,
         ];
 
         $user->info->update($updateData);

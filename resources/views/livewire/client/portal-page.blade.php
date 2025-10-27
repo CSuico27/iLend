@@ -457,11 +457,19 @@
                                     :mask="['+63 ### ### ####']"
                                 />
 
+                                <x-select label="Marital Status" wire:model.live="marital_status" placeholder="Enter your marital status">
+                                        <x-select.option label="Single" value="Single" />
+                                        <x-select.option label="Married" value="Married" />
+                                        <x-select.option label="Divorced" value="Divorced" />
+                                        <x-select.option label="Widowed" value="Widowed" />
+                                </x-select>
+
                                 {{-- <x-input 
                                     label="Address" 
                                     placeholder="Address" 
                                     wire:model.defer="address" 
                                 /> --}}
+                                
                                 <div class="w-full flex flex-col md:flex-row gap-2">
                                     <x-select
                                         label="Select Region"
@@ -600,6 +608,9 @@
                                     </p>
                                     <p class="text-sm text-gray-500">Email: 
                                         <span class="font-semibold text-lg text-gray-800 break-words">{{ $userInfo->email }}</span>
+                                    </p>
+                                    <p class="text-sm text-gray-500">Marital Status: 
+                                        <span class="font-semibold text-lg text-gray-800 break-words">{{ $userInfo->info->marital_status }}</span>
                                     </p>
                                 </div>
                                 <div class="space-y-1">
