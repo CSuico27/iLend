@@ -134,7 +134,7 @@
                         </x-modal-card>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                         <x-card title="Active Loan" rounded="3xl">
                             @if ($hasActiveLoan)
                                 <div>
@@ -163,9 +163,17 @@
                             </div>
                         </x-card>
                         <x-card title="Total Remaining Balance" rounded="3xl">
-                            <div class="text-xl font-bold text-red-600">
-                                ₱{{ number_format($remainingBalance, 2) }}
+                            <p>Total Loan Payable: <span class="text-sm capitalize italic">₱{{ number_format($totalPayable, 2) }}</span></p>
+                            <hr class="border-red-500">
+                            <p class="mt-5">Remaining Balance: <span class="text-xl font-bold text-red-600 my-5">₱{{ number_format($remainingBalance, 2) }}</span> </p>
+                        </x-card>
+                        <x-card title="Dividends" rounded="3xl">
+                            <div>
+                                <p>Total Share Capital (Monthly): <span class="text-sm capitalize italic">₱{{ number_format($totalShare, 2) }}</span></p>
+                                <p>Average Share: <span class="text-sm capitalize italic">₱{{ number_format($totalAverageShare, 2) }}</span></p>
                             </div>
+                            <hr class="border-red-500">
+                            <p class="mt-5">Computed Dividend: <span class="text-xl font-bold text-blue-600 my-5">%{{ number_format($accumulatedDividends, 2) }}</span> </p>
                         </x-card>
                     </div>
                    <div class="flex flex-col items-end mt-4 space-y-2">
@@ -690,8 +698,16 @@
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> ₱{{ number_format($selectedLoan->interest_amount, 2) }}</span></td>
                                       </tr>
                                       <tr>
+                                        <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Date Granted</span> </td>
+                                        <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->approved_at ? \Carbon\Carbon::parse($selectedLoan->approved_at)->format('F j, Y') : 'N/A' }}</span></td>
+                                      </tr>
+                                      <tr>
+                                        <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Term End</span> </td>
+                                        <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->end_date ? \Carbon\Carbon::parse($selectedLoan->end_date)->format('F j, Y') : 'N/A' }}</span></td>
+                                      </tr>
+                                      <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"></td>
-                                        <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">Total: <span class="capitalize px-4 text-lg"> ₱{{ number_format($selectedLoan->total_payment, 2) }}</span></td>
+                                        <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">Total: <span class="capitalize px-4 text-lg"> ₱{{ number_format($selectedLoan->remaining_balance, 2) }}</span></td>
                                       </tr>
                                     </tbody>
                                   </table>
@@ -718,7 +734,19 @@
                                 @else
                                     <span class="text-xs text-gray-400 italic">No ledger PDF available</span>
                                 @endif
-                                
+                                 @if ($selectedLoan->soa_path)
+                                    <a href="{{ asset('storage/' . $selectedLoan->soa_path) }}"
+                                        download
+                                        class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent p-1 bg-blue-500 hover:bg-blue-600 text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+                                            <path fill-rule="evenodd" d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a1.875 1.875 0 0 1-1.875-1.875V5.25A3.75 3.75 0 0 0 9 1.5H5.625ZM7.5 15a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 7.5 15Zm.75 2.25a.75.75 0 0 0 0 1.5H12a.75.75 0 0 0 0-1.5H8.25Z" clip-rule="evenodd" />
+                                            <path d="M12.971 1.816A5.23 5.23 0 0 1 14.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 0 1 3.434 1.279 9.768 9.768 0 0 0-6.963-6.963Z" />
+                                        </svg>
+                                        Download SOA
+                                    </a>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">No SOA available</span>
+                                @endif
                             </div>
                            
                         </h3>

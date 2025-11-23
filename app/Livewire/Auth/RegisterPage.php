@@ -26,7 +26,7 @@ class RegisterPage extends Component
     public function register()
     {
         $this->validate([
-            'full_name' => 'required|max:255',
+            'full_name' => 'required|regex:/^[a-zA-Z\s]+$/u|max:255',
             'email' => 'email|unique:users,email|max:255',
             'password' => 'required|min:8|max:255',
             'confirmPassword' => 'required|same:password|min:8|max:255',

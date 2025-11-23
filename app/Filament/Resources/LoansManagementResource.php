@@ -202,7 +202,9 @@ class LoansManagementResource extends Resource
                                     ->where('is_finished', 0)
                                 )
                         )
-                        ->required(),
+                        ->required()
+                        ->live()  
+                        ->afterStateUpdated(fn (Set $set) => $set('loan_amount', null)),
 
                     Grid::make(2)->schema([
                         Select::make('loan_type')
@@ -219,8 +221,30 @@ class LoansManagementResource extends Resource
                             ->numeric()
                             ->prefix('₱')
                             ->placeholder('15,000.00')
-                            ->helperText('Maximum allowed amount is ₱100,000.00')
-                            ->rules(['numeric', 'max:100000.00'])
+                            ->helperText(function (Get $get) {
+                                $userId = $get('user_id');
+                                if ($userId) {
+                                    $totalShare = \App\Models\Dividend::where('user_id', $userId)->latest()->value('total_share') ?? 0;
+                                    return 'Maximum loanable amount based on share capital: ₱' . number_format($totalShare, 2);
+                                }
+                                return 'Select a member first to see maximum loanable amount.';
+                            })
+                            ->rules([
+                                'numeric',
+                                function (Get $get) {
+                                    return function (string $attribute, $value, \Closure $fail) use ($get) {
+                                        $userId = $get('user_id');
+                                        if (!$userId) return;
+                                        
+                                        $totalShare = \App\Models\Dividend::where('user_id', $userId)->latest()->value('total_share') ?? 0;
+                                        $loanAmount = floatval(str_replace(',', '', $value ?? 0));
+                                        
+                                        if ($loanAmount > $totalShare) {
+                                            $fail("Loan amount cannot exceed member's total share capital of ₱" . number_format($totalShare, 2));
+                                        }
+                                    };
+                                },
+                            ])
                             ->mask(RawJs::make(<<<'JS'
                                 ($input) => {
                                     const digits = $input.replace(/[^\d]/g, '');
@@ -229,7 +253,7 @@ class LoansManagementResource extends Resource
 
                                     const number = parseFloat(digits) / 100;
 
-                                    if (number > 100000) return '100,000.00';
+                                    if (number > 100000) return '0.00';
 
                                     return number.toLocaleString('en-US', {
                                         minimumFractionDigits: 2,
@@ -455,7 +479,10 @@ class LoansManagementResource extends Resource
                         ->modalDescription('Are you sure you want to approve this application?')
                         ->action(function ($record) {
                         
-                            $record->update(['status' => 'Approved']);
+                            $record->update([
+                                'status' => 'Approved',
+                                'approved_at' => Carbon::now(),
+                            ]);
                             Mail::to($record->user->email)->send(
                                 new LoanStatus($record, 'Approved')
                             );

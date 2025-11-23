@@ -33,7 +33,7 @@ class PortalPage extends Component
     public $hasActiveLoan = false;
     public $activeLoanAmount = 0;
     public $totalPaid = 0;
-    public $remainingBalance = 0;
+    public $totalPayable = 0;
 
     public $userLoans;
     public $selectedLoan = null;
@@ -75,6 +75,11 @@ class PortalPage extends Component
     public $selected_gcash_qr;
     public $gcashQrs = [];
     public $remainingLedgers = 0;
+    public $dividends;
+    public $accumulatedDividends = 0;
+    public $totalShare = 0;
+    public $totalAverageShare = 0;
+    public $remainingBalance = 0;
 
 
     public function setActiveTab($tab)
@@ -126,6 +131,8 @@ class PortalPage extends Component
             //for gcash qr codes
             $this->gcashQrs = \App\Models\gcash::all();
 
+            $this->accumulatedDividends();
+
             if ($userProfile && $userProfile->status == 'Pending') {
                 return redirect()->route('user.home')->with('portal_error', 'Your membership application is currently under review. Please wait for approval.');
             }
@@ -159,6 +166,7 @@ class PortalPage extends Component
                 });
             
                 $this->remainingBalance = round($totalPayable - $this->totalPaid, 2);
+                $this->totalPayable = $this->activeLoanDetails->total_payment;
 
                 $this->remainingLedgers = $this->activeLoanDetails
                     ->ledgers()
@@ -168,7 +176,7 @@ class PortalPage extends Component
                 $this->hasActiveLoan = false;
                 $this->activeLoanAmount = 0;
                 $this->totalPaid = 0;
-                $this->remainingBalance = 0;
+                $this->totalPayable = 0;
             }
             
         }
@@ -261,7 +269,7 @@ class PortalPage extends Component
         ];
     }
 
-    public function openLoanApplicationModal()
+   public function openLoanApplicationModal()
     {
         if (! $this->canApply) {
             $popup = $this->getPopupErrorData();
@@ -269,6 +277,16 @@ class PortalPage extends Component
             $this->notification()->error(
                 $popup['title'],
                 $popup['message']
+            );
+            return;
+        }
+        
+        // Check if user has share capital
+        $totalShare = Auth::user()->dividends()->latest()->value('total_share') ?? 0;
+        if ($totalShare <= 0) {
+            $this->notification()->error(
+                'No Share Capital',
+                'You must have share capital before applying for a loan. Please contact the admin.'
             );
             return;
         }
@@ -349,9 +367,31 @@ class PortalPage extends Component
                 $calculatedInterestRate = (float) ($this->interest_rate ?? 0);
             }
             
+            // Get user's total share from dividends
+            $totalShare = Auth::user()->dividends()->latest()->value('total_share') ?? 0;
+            $loanAmount = (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? '');
+            
+            // Check if loan amount exceeds total share
+            if ($loanAmount > $totalShare) {
+                $this->notification()->error(
+                    'Loan Limit Exceeded',
+                    'Your loan amount cannot exceed your total share capital of ₱' . number_format($totalShare, 2)
+                );
+                return;
+            }
+            
+            // Check if user has no dividends/share capital
+            if ($totalShare <= 0) {
+                $this->notification()->error(
+                    'No Share Capital',
+                    'You must have share capital before applying for a loan. Please contact the admin.'
+                );
+                return;
+            }
+            
             $this->validate([
                 'user_id' => 'required|exists:users,id',
-                'loan_amount' => 'required|numeric|max:100000',
+                'loan_amount' => 'required|numeric|min:1|max:' . $totalShare,
                 'loan_type' => 'required|string|max:255',
                 'interest_rate' => 'nullable|numeric|max:100',
                 'loan_term' => 'required|integer|min:1|max:60',
@@ -363,10 +403,10 @@ class PortalPage extends Component
                 'payment_per_term' => 'nullable|numeric|min:0',
             ]);
 
-            loan::create([
+            Loan::create([
                 'user_id' => $this->user_id,
                 'loan_type' => $this->loan_type,
-                'loan_amount' => (float) preg_replace('/[^\d.]/', '', $this->loan_amount ?? ''),
+                'loan_amount' => $loanAmount,
                 'interest_rate' => $calculatedInterestRate,
                 'loan_term' => (int) ($this->loan_term ?? 0),
                 'payment_frequency' => $this->payment_frequency,
@@ -578,6 +618,14 @@ class PortalPage extends Component
         return $loan->ledgers()->where('status', '!=', 'Paid')->count();
     }
 
+    public function accumulatedDividends()
+    {
+        $this->dividends = Auth::user()->dividends()->get();
+        $this->totalShare = $this->dividends->sum('total_share');
+        $this->totalAverageShare = $this->dividends->sum('total_average_share');
+        $this->accumulatedDividends = $this->dividends->sum('dividend_amount');
+        Log::info('Accumulated Dividends: ' . $this->totalAverageShare);
+    }
     public function updatedRegion($value)
     {
         $this->getRegionCode();
