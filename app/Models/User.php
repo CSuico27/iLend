@@ -101,5 +101,8 @@ class User extends Authenticatable
         // normal users only see admins
         return $query->where('role', 'admin');
     }
-
+    public function dividends()
+    {
+        return $this->hasMany(Dividend::class);
+    }
 }

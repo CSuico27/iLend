@@ -20,6 +20,7 @@ use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\View;
+use Filament\Support\RawJs;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 
@@ -263,6 +264,110 @@ class MemberListResource extends Resource
                         })
                         ->modalHeading('Update Approved Date')
                         ->modalButton('Save Date'),
+                    Tables\Actions\Action::make('calculateDividend')
+                        ->label('Calculate Dividend')
+                        ->icon('heroicon-o-calculator')
+                        ->form([
+                            TextInput::make('total_share')
+                                ->label('Total Share Capital per Month (Sum of Ending Balances)')
+                                ->numeric()
+                                ->prefix('₱')
+                                ->required()
+                                ->helperText('Maximum allowed amount is ₱100,000.00')
+                                ->mask(RawJs::make(<<<'JS'
+                                    ($input) => {
+                                        const digits = $input.replace(/[^\d]/g, '');
+
+                                        if (!digits) return '';
+
+                                        const number = parseFloat(digits) / 100;
+
+                                        if (number > 100000 ) return '0.00';
+
+                                        return number.toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        });
+                                    }
+                                JS))
+                                ->stripCharacters([','])
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                    // Remove commas and convert to float
+                                    $total = floatval(str_replace(',', '', $state ?? 0));
+                                    $average = $total / 12;
+                                    $rate = floatval($get('interest_rate') ?? 0) / 100;
+                                    $dividend = $average * $rate;
+                                    
+                                    $set('total_average_share', number_format($average, 2, '.', ''));
+                                    $set('dividend_amount', number_format($dividend, 2, '.', ''));
+                                }),
+                            
+                            TextInput::make('total_average_share')
+                                ->label('Total Average Share')
+                                ->numeric()
+                                ->prefix('₱')
+                                ->disabled()
+                                ->dehydrated()
+                                ->inputMode('decimal'),
+                            
+                            TextInput::make('interest_rate')
+                                ->label('Interest Rate')
+                                ->numeric()
+                                ->prefix('%')
+                                ->disabled()
+                                ->dehydrated()
+                                ->live()
+                                ->afterStateHydrated(function ($state, callable $set, callable $get) {
+                                    $total = floatval($get('total_share') ?? 0);
+                                    $average = $total / 12;
+                                    $rate = floatval($state ?? 0) / 100;
+                                    $dividend = $average * $rate;
+                                    
+                                    $set('total_average_share', round($average, 2));
+                                    $set('average_share_months', round($average, 2));
+                                    $set('dividend_amount', round($dividend, 2));
+                                }),
+                            
+                            TextInput::make('dividend_amount')
+                                ->label('Computed Dividend')
+                                ->numeric()
+                                ->prefix('%')
+                                ->disabled()
+                                ->dehydrated()
+                                ->inputMode('decimal'),
+                        ])
+                        ->fillForm(function (User $record): array {
+                            $interestRate = \App\Models\Interest::orderByDesc('created_at')->value('interest_rate') ?? 0;
+                            
+                            $existingDividend = $record->dividends()->latest()->first();
+                            
+                            return [
+                                'total_share' => $existingDividend?->total_share ?? 0,
+                                'total_average_share' => $existingDividend ? ($existingDividend->total_share / 12) : 0,
+                                'interest_rate' => $interestRate,
+                                'dividend_amount' => $existingDividend?->dividend_amount ?? 0,
+                            ];
+                        })
+                        ->modalWidth('lg')
+                        ->modalHeading(fn (User $record) => "Calculate Dividend for {$record->name}")
+                        ->modalSubmitActionLabel('Save Dividend')
+                        ->action(function (User $record, array $data): void {
+                            $record->dividends()->updateOrCreate(
+                                ['user_id' => $record->id],
+                                [
+                                    'total_share' => $data['total_share'],
+                                    'total_average_share' => $data['total_average_share'],
+                                    'dividend_amount' => $data['dividend_amount'],
+                                ]
+                            );
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Dividend Saved!')
+                                ->body("Total dividend of " . number_format($data['dividend_amount'], 2) . "%" . " has been saved for {$record->name}")
+                                ->success()
+                                ->send();
+                        }),
                     Tables\Actions\DeleteAction::make(),
                 ])
                 ->label('Actions')

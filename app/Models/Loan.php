@@ -20,8 +20,11 @@ class Loan extends Model
         'payment_frequency',
         'interest_amount',
         'total_payment',
+        'remaining_balance',
         'payment_per_term',
         'status',
+        'soa_path',
+        'approved_at',
         'start_date',
         'end_date',
         'is_finished',
@@ -38,6 +41,10 @@ class Loan extends Model
     {
         //when loan is created
         static::created(function ($loan) {
+            $loan->updateQuietly([
+                'remaining_balance' => $loan->total_payment,
+            ]);
+
             $loan->generateLedgers();
             $loan->generateLedgerPdf();
         });
@@ -141,6 +148,7 @@ class Loan extends Model
         $this->updateQuietly([
             'interest_amount'   => $interestAmount,
             'total_payment'     => $totalPayment,
+            'remaining_balance' => $this->remaining_balance ?: $totalPayment, 
             'payment_per_term'  => $paymentPerTerm,
         ]);
     }

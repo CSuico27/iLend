@@ -182,7 +182,7 @@
             
             <div class="receipt-body">
                 Received from <span class="member-underline">{{ $loan->user->name ?? '' }}</span><br>
-                with TIN <span class="underline">{{ $loan->user->info->tin_number ?? 'N/A' }}</span> and reside at <span class="semi-underline">{{ $loan->user->info->address ?? 'N/A' }}</span><br>
+                with TIN <span class="underline">{{ $loan->user->info->tin_number ?? 'N/A' }}</span> and reside at <span class="semi-underline">{{ 'Brgy. ' . ($loan->user->info->barangay ?? '') . ', ' . ($loan->user->info->municipality ?? '') . ', ' . ($loan->user->info->province ?? '') }}</span><br>
                 who agreed to join <strong>LUCBAN GENESIS TRANSPORT SERVICE and MULTIPURPOSE COOPERATIVE</strong> as a member with ID No. 
                 <span class="semi-underline">{{ $loan->user->info->member_id ?? 'N/A' }}</span><br>
                 the sum of(<span class="underline">₱{{ number_format($ledger->loan->payment_per_term ?? 0, 2) }}</span>) in partial/full payment for <span class="loantype-underline">{{ ucfirst($loan->loan_type) ?? '' }} Loan</span>
