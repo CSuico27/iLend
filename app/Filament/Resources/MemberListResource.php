@@ -274,6 +274,11 @@ class MemberListResource extends Resource
                                 ->prefix('₱')
                                 ->required()
                                 ->helperText('Maximum allowed amount is ₱100,000.00')
+                                ->extraAlpineAttributes([
+                                    'x-on:input' => '
+                                        $el.value = $el.value.replace(/[^0-9,.]/g, "")
+                                    ',
+                                ])
                                 ->mask(RawJs::make(<<<'JS'
                                     ($input) => {
                                         const digits = $input.replace(/[^\d]/g, '');
