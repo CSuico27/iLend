@@ -650,7 +650,20 @@
         </div>
     </div>
     <x-modal name="laonDetailsModal" persistent>
-        <x-card title="Loan Details" style="z-index: 100">
+        <x-card style="z-index: 100">
+            <div class="flex justify-between items-center">
+                <h2 class="text-md font-regular">Loan Details</h2>
+                <button 
+                    x-on:click="close" 
+                    wire:click="clearSelectedLoan"
+                    class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <hr class="border-gray-300 mb-4 mt-2">
             <div class="w-full lg:max-w-3xl lg:min-w-3xl">
                 @if ($selectedLoan)
                     <div class="w-full h-auto">
@@ -665,64 +678,64 @@
                         <hr class="border-red-500 mb-4">
                         <div class="flex flex-col">
                             <div class="lg:-m-1.5 overflow-x-auto">
-                              <div class="p-1.5 lg:min-w-full inline-block align-middle">
+                            <div class="p-1.5 lg:min-w-full inline-block align-middle">
                                 <div class="border border-gray-200 overflow-hidden dark:border-neutral-700">
-                                  <table class="lg:min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                                <table class="lg:min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                                     <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
-                                      <tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Type</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full">{{ $selectedLoan->loan_type }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Amount</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> ₱{{ number_format($selectedLoan->loan_amount, 2) }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Interest Rate</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->interest_rate }}%</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Term</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->loan_term }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Payment Frequency</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->payment_frequency }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Payment Per Term</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> ₱{{ number_format($selectedLoan->payment_per_term, 2) }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Total Interest Amount</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> ₱{{ number_format($selectedLoan->interest_amount, 2) }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Date Granted</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->approved_at ? \Carbon\Carbon::parse($selectedLoan->approved_at)->format('F j, Y') : 'N/A' }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"> <span class="font-semibold text-md">Term End</span> </td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200"><span class="capitalize px-4 text-sm italic bg-green-600 text-white rounded-full"> {{ $selectedLoan->end_date ? \Carbon\Carbon::parse($selectedLoan->end_date)->format('F j, Y') : 'N/A' }}</span></td>
-                                      </tr>
-                                      <tr>
+                                    </tr>
+                                    <tr>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200"></td>
                                         <td class="w-1/2 px-2 lg:px-6 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">Total: <span class="capitalize px-4 text-lg"> ₱{{ number_format($selectedLoan->remaining_balance, 2) }}</span></td>
-                                      </tr>
+                                    </tr>
                                     </tbody>
-                                  </table>
+                                </table>
                                 </div>
-                              </div>
+                            </div>
                             </div>
                         </div>                     
-                         <h3 class="mt-4 font-semibold mb-2 flex justify-between items-center">
+                        <h3 class="mt-4 font-semibold mb-2 flex justify-between items-center">
                             <span>Ledgers</span>
                             <div class="flex flex-row space-x-2">
                                 <button type="button" class="py-2 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800">
                                     Total Payments: 
                                     <span class="inline-flex items-center py-0.5 px-1.5 rounded-full text-xs font-medium bg-red-500 text-white">{{$remainingLedgers}}</span>
                                 </button>
-                                 @if ($selectedLoan->ledgers->first()?->ledger_path)
+                                @if ($selectedLoan->ledgers->first()?->ledger_path)
                                     <a href="{{ asset('storage/' . $selectedLoan->ledgers->first()->ledger_path) }}"
                                         download
                                         class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent p-1 bg-red-500 hover:bg-red-600 text-white">
@@ -734,7 +747,7 @@
                                 @else
                                     <span class="text-xs text-gray-400 italic">No ledger PDF available</span>
                                 @endif
-                                 @if ($selectedLoan->soa_path)
+                                @if ($selectedLoan->soa_path)
                                     <a href="{{ asset('storage/' . $selectedLoan->soa_path) }}"
                                         download
                                         class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent p-1 bg-blue-500 hover:bg-blue-600 text-white">
@@ -748,7 +761,7 @@
                                     <span class="text-xs text-gray-400 italic">No SOA available</span>
                                 @endif
                             </div>
-                           
+                        
                         </h3>
                         <hr class="border-red-500 mb-4">
                         <div class="flex flex-col max-w-[320px] mx-auto lg:mx-0 lg:max-w-full">
@@ -789,8 +802,8 @@
                                                         <td class="px-2 lg:px-6 py-2 whitespace-nowrap text-end text-sm font-medium">
                                                             @if ($ledger->payment && $ledger->payment->receipt)
                                                                 <a href="{{ asset('storage/' . $ledger->payment->receipt) }}"
-                                                                   download
-                                                                   class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-green-600 hover:text-green-800 focus:outline-hidden focus:text-green-800 dark:text-green-400 dark:hover:text-green-300 dark:focus:text-green-300">
+                                                                download
+                                                                class="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-green-600 hover:text-green-800 focus:outline-hidden focus:text-green-800 dark:text-green-400 dark:hover:text-green-300 dark:focus:text-green-300">
                                                                     Download Receipt
                                                                 </a>
                                                             @else

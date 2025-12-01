@@ -40,15 +40,24 @@
         <div class="p-6 space-y-4">
             <h3 class="text-lg font-semibold text-gray-800">2. Contribution Requirements</h3>
 
-            <p class="text-gray-600">
+            <p class="text-gray-600 font-semibold">
                 Members are expected to provide regular capital contributions, such as monthly deposits or share capital payments.
                 These contributions:
             </p>
 
             <ul class="list-disc list-inside space-y-2 text-gray-700 pl-2">
-                <li>Maintain the member’s active status</li>
-                <li>Determine eligibility for loans, dividends, and benefits</li>
-                <li>Support the cooperative’s growth, operations, and sustainability</li>
+                <li>Maintain the member’s active status.</li>
+                <li>Determine eligibility for loans, dividends, and benefits.</li>
+                <li>Support the cooperative’s growth, operations, and sustainability.</li>
+            </ul>
+
+            <p class="text-gray-600 font-semibold">
+                Loan eligibility requirements:
+            </p>
+
+            <ul class="list-disc list-inside space-y-2 text-gray-700 pl-2">
+                <li>To qualify for any loan, a member must have at least one (1) year of active member.</li>
+                <li>Maximum loan amount is 50% of Share Capital.</li>
             </ul>
         </div>
 

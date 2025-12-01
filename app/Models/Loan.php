@@ -58,6 +58,10 @@ class Loan extends Model
                 $loan->generateLedgerPdf();
             }
         });
+
+        static::created(function ($loan) {
+            $loan->generateSOA();
+        });
     }
 
     public function generateLedgerPdf()
@@ -152,5 +156,44 @@ class Loan extends Model
             'payment_per_term'  => $paymentPerTerm,
         ]);
     }
+   
+    public function generateSOA()
+    {
+        $totalPaid = $this->ledgers->sum(fn ($ledger) =>
+            $ledger->payment?->status === 'Approved'
+                ? ($ledger->payment->amount ?? 0)
+                : 0
+        );
 
+        $remainingBalance = $this->remaining_balance
+            ?? ($this->total_payment - $totalPaid);
+
+        $pdf = Pdf::loadView('pdf.view-soa', [
+            'loan' => $this,
+            'totalPaid' => $totalPaid,
+            'remainingBalance' => $remainingBalance,
+        ]);
+
+        $userName = str_replace(' ', '_', strtolower($this->user->name));
+        $timestamp = now()->format('Ymd_His'); // Added time for uniqueness
+        $loanID = $this->id;
+
+        $filename = "SOA_{$loanID}_{$userName}_{$timestamp}.pdf";
+        $path = "soa/{$filename}";
+
+        if ($this->soa_path && Storage::disk('public')->exists($this->soa_path)) {
+            Storage::disk('public')->delete($this->soa_path);
+        }
+
+        Storage::disk('public')->put($path, $pdf->output());
+        
+        $this->updateQuietly(['soa_path' => $path]); 
+        
+        return $path;
+    }
+
+    public function getLatestSOA()
+    {
+        return $this->generateSOA();
+    }
 }

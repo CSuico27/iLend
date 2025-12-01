@@ -194,42 +194,19 @@ class LedgersRelationManager extends RelationManager
                     ->color('info')
                     ->visible(fn ($livewire) => $livewire->getOwnerRecord()->status === 'Approved')
                     ->action(function ($livewire) {
-
                         $loan = $livewire->getOwnerRecord();
-
-                        $totalPaid = $loan->ledgers->sum(fn ($ledger) =>
-                            $ledger->payment?->status === 'Approved'
-                                ? ($ledger->payment->amount ?? 0)
-                                : 0
-                        );
-
-                        $remainingBalance = $loan->remaining_balance
-                            ?? ($loan->total_payment - $totalPaid);
-
-                        $pdf = Pdf::loadView('pdf.view-soa', [
-                            'loan' => $loan,
-                            'totalPaid' => $totalPaid,
-                            'remainingBalance' => $remainingBalance,
-                        ]);
-
-                        $userName = str_replace(' ', '_', strtolower($loan->user->name));
-                        $timestamp = now()->format('Ymd');
-                        $loanID = $loan->id;
-
-                        $filename = "SOA_{$loanID}_{$userName}_{$timestamp}.pdf";
-                        $path = "soa/{$filename}";
-
-                        Storage::disk('public')->put($path, $pdf->output());
-                        $loan->update(['soa_path' => $path]);
+                        
+                        // Always get latest SOA
+                        $path = $loan->getLatestSOA();
 
                         Notification::make()
-                            ->title('SOA has been saved')
+                            ->title('SOA has been generated')
                             ->success()
                             ->send();
 
                         return response()->download(
                             storage_path("app/public/{$path}"),
-                            $filename
+                            basename($path)
                         );
                     })
                     ->openUrlInNewTab(),
@@ -361,6 +338,8 @@ class LedgersRelationManager extends RelationManager
                             ]);
                             $this->updateLoanFinishedStatus($record->loan);
 
+                            $record->loan->generateSOA();
+
                             Mail::to($record->loan->user->email)->send(
                                 new PaymentStatus($payment, 'Approved')
                             );
@@ -481,6 +460,8 @@ class LedgersRelationManager extends RelationManager
                                             'remaining_balance' => $record->loan->remaining_balance - $payment->amount,
                                         ]);
                                         $this->updateLoanFinishedStatus($record->loan);
+
+                                        $record->loan->generateSOA();
 
                                         Mail::to($record->loan->user->email)->send(
                                             new PaymentStatus($record->payment, 'Approved')

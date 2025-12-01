@@ -229,6 +229,11 @@ class LoansManagementResource extends Resource
                                 }
                                 return 'Select a member first to see maximum loanable amount.';
                             })
+                            ->extraAlpineAttributes([
+                                    'x-on:input' => '
+                                        $el.value = $el.value.replace(/[^0-9,.]/g, "")
+                                    ',
+                            ])
                             ->rules([
                                 'numeric',
                                 function (Get $get) {
