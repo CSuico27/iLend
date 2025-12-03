@@ -13,10 +13,10 @@
                     placeholder="Enter Full Name"
                     wire:model="full_name"
                     x-data
-                    x-on:keypress="if (!/[a-zA-Z\s]/.test($event.key)) $event.preventDefault()"
+                    x-on:keypress="if (!/[a-zA-Z\s,\.]/.test($event.key)) $event.preventDefault()"
                     x-on:paste.prevent="
                         let paste = ($event.clipboardData || window.clipboardData).getData('text');
-                        let cleaned = paste.replace(/[^a-zA-Z\s]/g, '');
+                        let cleaned = paste.replace(/[^a-zA-Z\s,\.]/g, '');
                         $event.target.value = cleaned;
                         $wire.set('full_name', cleaned);
                     "
